@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scifit/shared/widgets/global_appbar.dart';
 
 class SleepPage extends StatefulWidget {
   const SleepPage({super.key});
@@ -10,13 +11,16 @@ class SleepPage extends StatefulWidget {
 class _Home extends State<SleepPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(color: Colors.white),
-      child: const Center(
-        child: Text(
-          'Hello Sleep',
-          textDirection: TextDirection.ltr,
-          style: TextStyle(fontSize: 32, color: Colors.black87),
+    return Scaffold(
+      appBar: AppBar(title: GlobalAppbar(title: "SLEEP ANALYSIS")),
+      body: Container(
+        decoration: const BoxDecoration(color: Colors.transparent),
+        child: const Center(
+          child: Text(
+            'Hello SLEEP',
+            textDirection: TextDirection.ltr,
+            style: TextStyle(fontSize: 32, color: Colors.black87),
+          ),
         ),
       ),
     );

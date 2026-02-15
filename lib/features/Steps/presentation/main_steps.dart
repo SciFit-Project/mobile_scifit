@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scifit/shared/widgets/global_appbar.dart';
 
 class StepPage extends StatefulWidget {
   const StepPage({super.key});
@@ -10,13 +11,16 @@ class StepPage extends StatefulWidget {
 class _Home extends State<StepPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(color: Colors.white),
-      child: const Center(
-        child: Text(
-          'Hello Steps',
-          textDirection: TextDirection.ltr,
-          style: TextStyle(fontSize: 32, color: Colors.black87),
+    return Scaffold(
+      appBar: AppBar(title: GlobalAppbar(title: "ACTIVITY")),
+      body: Container(
+        decoration: const BoxDecoration(color: Colors.transparent),
+        child: const Center(
+          child: Text(
+            'Hello STEPS',
+            textDirection: TextDirection.ltr,
+            style: TextStyle(fontSize: 32, color: Colors.black87),
+          ),
         ),
       ),
     );
