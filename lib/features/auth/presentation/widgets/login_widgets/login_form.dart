@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/features/auth/data/auth_repository.dart';
 
@@ -26,36 +27,36 @@ class _LoginFormState extends State<LoginForm> {
   void _onSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-      _showError('Get and Set Token');
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
 
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
 
-    // if (email.isEmpty || password.isEmpty) {
-    //   _showError('Please fill in all fields');
-    //   return;
-    // }
+    if (password.length < 8) {
+      _showError('Password must be at least 8 characters');
+      return;
+    }
 
-    // final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    // if (!emailRegex.hasMatch(email)) {
-    //   _showError('Please enter a valid email address');
-    //   return;
-    // }
+    try {
+      final response = await _authRepo.signInWithEmail(email, password);
 
-    // if (password.length < 8) {
-    //   _showError('Password must be at least 8 characters');
-    //   return;
-    // }
+      if (!mounted) return;
 
-    // try {
-    //   final token = await _authRepo.signInWithEmail(
-    //     _emailController.text,
-    //     _passwordController.text,
-    //   );
-    //   if (token != null) {
-    //     _showError("token: $token");
-    //   }
-    // } catch (e) {
-    //   _showError(e.toString());
-    // }
+      if (response != null && response.statusCode == 200) {
+        context.go('/home');
+      } else {
+        _showError('Invalid email or password');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showError('Login failed: ${e.toString()}');
+    }
   }
 
   void _showError(String message) {
@@ -113,17 +114,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
 
         const Gap(16),
-
-        // TextButton(
-        //   onPressed: () {},
-        //   child: Text(
-        //     "Forgot Password?",
-        //     style: GoogleFonts.spaceGrotesk(
-        //       color: const Color(0xFF555555),
-        //       fontSize: 14,
-        //     ),
-        //   ),
-        // ),
+        //Add Button to redirect to Register page
       ],
     );
   }

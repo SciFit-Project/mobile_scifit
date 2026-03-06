@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
 import 'package:mobile_scifit/features/auth/presentation/screens/home_screen.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/screen/onboardingscreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -13,9 +15,12 @@ class AppRouter {
   static final router = GoRouter(
     initialLocation: '/splash',
     refreshListenable: GoRouterRefreshStream(_supabase.auth.onAuthStateChange),
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final session = _supabase.auth.currentSession;
-      final isLoggedIn = session != null;
+
+      final customToken = await SecureStorageService.getToken();
+      final isLoggedIn = (session != null) || (customToken != null);
+
       final isSplash = state.matchedLocation == '/splash';
       final isLogin = state.matchedLocation == '/login';
 
@@ -31,11 +36,11 @@ class AppRouter {
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(path: '/onboarding', builder: (context, state) => const Onboardingscreen()),
     ],
   );
 }
 
-// Listens to Supabase auth changes and notifies GoRouter to re-evaluate redirect
 class GoRouterRefreshStream extends ChangeNotifier {
   late final dynamic _subscription;
 

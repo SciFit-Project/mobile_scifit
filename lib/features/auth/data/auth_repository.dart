@@ -1,15 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mobile_scifit/core/network/dio_client.dart';
+import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 
 class AuthRepository {
   final _supabase = Supabase.instance.client;
-
-  final Dio _dio = Dio(
-    BaseOptions(baseUrl: dotenv.env['BACKEND_URL'] ?? ''),
-  );
+  final Dio _dio = DioClient().instance;
 
   User? get currentUser => _supabase.auth.currentUser;
   Session? get currentSession => _supabase.auth.currentSession;
@@ -35,7 +32,10 @@ class AuthRepository {
       '/api/auth/login',
       data: {'email': email, 'password': password},
     );
-    // print(response);
+    if (response.data['success'] && response.data['token'] != "") {
+      await SecureStorageService.saveToken(response.data['token']);
+      return response;
+    }
     return response;
   }
 }

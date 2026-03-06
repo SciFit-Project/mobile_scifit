@@ -22,20 +22,18 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
   final OnboardingData _collectedData = OnboardingData();
 
   int _currentPage = 0;
-  final List<bool> _isPageValid = [false, false, false, true];
+  final List<bool> _isPageValid = [false, false, false, false];
   late List<Widget> _steps;
 
   @override
   void initState() {
     super.initState();
-    // สร้าง List ครั้งเดียวตอนเริ่มต้น
     super.initState();
     _steps = [
       Information(
         onValidChanged: (isValid, age, h, w, g) {
           setState(() {
             _isPageValid[0] = isValid;
-            // 2. รับข้อมูลจากหน้า Information
             _collectedData.age = age;
             _collectedData.height = h;
             _collectedData.weight = w;
@@ -59,7 +57,13 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
           });
         },
       ),
-      const Permisson(),
+      Permisson(
+        onValidChanged: (isValid) {
+          setState(() {
+            _isPageValid[3] = isValid;
+          });
+        },
+      ),
     ];
   }
 
@@ -73,7 +77,6 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
     print("Plan: ${_collectedData.plan}");
     print("Activity: ${_collectedData.activityLevel}");
     // print("Final Data collected: ${_collectedData.toJson()}");
-
   }
 
   @override
@@ -116,7 +119,6 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
               child: Row(
                 children: [
-                  // 1. ปุ่ม Back (จะโชว์เมื่อไม่ใช่หน้าแรก)
                   if (_currentPage > 0)
                     Expanded(
                       flex: 1,
@@ -143,27 +145,23 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                       ),
                     ),
 
-                  // ระยะห่างระหว่างปุ่ม
                   if (_currentPage > 0) const SizedBox(width: 12),
 
-                  // 2. ปุ่ม Next
                   Expanded(
-                    flex: 4, // ให้ปุ่ม Next กว้างกว่าปุ่ม Back
+                    flex: 4, 
                     child: ElevatedButton(
                       onPressed: _isPageValid[_currentPage]
                           ? () {
                               if (_currentPage < _steps.length - 1) {
-                                // ถ้ายังไม่ถึงหน้าสุดท้าย ให้ไปหน้าถัดไป
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                 );
                               } else {
-                                // ถ้าเป็นหน้าสุดท้าย (Permission/Finish) ให้ส่งข้อมูล
                                 _submitData();
                               }
                             }
-                          : null, // ปุ่มจางถ้า Validate ไม่ผ่าน
+                          : null, 
                       child: Text(
                         _currentPage == _steps.length - 1
                             ? "Get Started"
