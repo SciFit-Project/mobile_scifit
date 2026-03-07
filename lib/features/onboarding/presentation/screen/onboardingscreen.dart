@@ -1,0 +1,180 @@
+// ignore_for_file: avoid_print
+
+import 'package:flutter/material.dart';
+import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/onboarding/data/onboard_data_model.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/widgets/onboard_header.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/activity.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/goal.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/infomation.dart';
+import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/permisson.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+class Onboardingscreen extends StatefulWidget {
+  const Onboardingscreen({super.key});
+
+  @override
+  State<Onboardingscreen> createState() => _OnboardingscreenState();
+}
+
+class _OnboardingscreenState extends State<Onboardingscreen> {
+  final PageController _pageController = PageController();
+  final OnboardingData _collectedData = OnboardingData();
+
+  int _currentPage = 0;
+  final List<bool> _isPageValid = [false, false, false, false];
+  late List<Widget> _steps;
+
+  @override
+  void initState() {
+    super.initState();
+    super.initState();
+    _steps = [
+      Information(
+        onValidChanged: (isValid, age, h, w, g) {
+          setState(() {
+            _isPageValid[0] = isValid;
+            _collectedData.age = age;
+            _collectedData.height = h;
+            _collectedData.weight = w;
+            _collectedData.gender = g;
+          });
+        },
+      ),
+      Goal(
+        onValidChanged: (isValid, plan) {
+          setState(() {
+            _isPageValid[1] = isValid;
+            _collectedData.plan = plan;
+          });
+        },
+      ),
+      Activity(
+        onValidChanged: (isValid, activity) {
+          setState(() {
+            _isPageValid[2] = isValid;
+            _collectedData.activityLevel = activity;
+          });
+        },
+      ),
+      Permisson(
+        onValidChanged: (isValid) {
+          setState(() {
+            _isPageValid[3] = isValid;
+          });
+        },
+      ),
+    ];
+  }
+
+  void _submitData() {
+    print("--- CLICKED GET STARTED ---");
+
+    print("Age: ${_collectedData.age}");
+    print("Height: ${_collectedData.height}");
+    print("Weight: ${_collectedData.weight}");
+    print("Gender: ${_collectedData.gender}");
+    print("Plan: ${_collectedData.plan}");
+    print("Activity: ${_collectedData.activityLevel}");
+    // print("Final Data collected: ${_collectedData.toJson()}");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+              child: OnboardHeader(),
+            ),
+
+            SmoothPageIndicator(
+              controller: _pageController,
+              count: _steps.length,
+              effect: ExpandingDotsEffect(
+                activeDotColor: AppTheme.primaryLight,
+                dotColor: AppTheme.primaryLight.withAlpha(20),
+                dotHeight: 4,
+                dotWidth: 4,
+                expansionFactor: 4,
+              ),
+            ),
+
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                children: _steps,
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+              child: Row(
+                children: [
+                  if (_currentPage > 0)
+                    Expanded(
+                      flex: 1,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: BorderSide(
+                            color: AppTheme.primaryLight.withAlpha(50),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "Back",
+                          style: TextStyle(color: AppTheme.primaryLight),
+                        ),
+                      ),
+                    ),
+
+                  if (_currentPage > 0) const SizedBox(width: 12),
+
+                  Expanded(
+                    flex: 4, 
+                    child: ElevatedButton(
+                      onPressed: _isPageValid[_currentPage]
+                          ? () {
+                              if (_currentPage < _steps.length - 1) {
+                                _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              } else {
+                                _submitData();
+                              }
+                            }
+                          : null, 
+                      child: Text(
+                        _currentPage == _steps.length - 1
+                            ? "Get Started"
+                            : "Next",
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
