@@ -38,4 +38,12 @@ class AuthRepository {
     }
     return response;
   }
+
+  Future<Response?> signUpWithEmail(String fullname ,String email, String password) async {
+    final response = await _dio.post(
+      '/api/auth/signup',
+      data: {'email': email, 'password': password},
+    );
+    return response;
+  }
 }

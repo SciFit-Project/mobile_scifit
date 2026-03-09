@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
-import 'package:mobile_scifit/features/auth/presentation/screens/home_screen.dart';
+import 'package:mobile_scifit/features/auth/presentation/screens/register_screen.dart';
+import 'package:mobile_scifit/features/home/presentation/screen/home_screen.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/screen/onboardingscreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -17,16 +18,16 @@ class AppRouter {
     refreshListenable: GoRouterRefreshStream(_supabase.auth.onAuthStateChange),
     redirect: (context, state) async {
       final session = _supabase.auth.currentSession;
-
       final customToken = await SecureStorageService.getToken();
       final isLoggedIn = (session != null) || (customToken != null);
 
-      final isSplash = state.matchedLocation == '/splash';
-      final isLogin = state.matchedLocation == '/login';
+      final loc = state.matchedLocation;
+      final isSplash = loc == '/splash';
+      final isAuthPage = loc == '/login' || loc == '/register';
 
       if (isSplash) return null;
-      if (!isLoggedIn && !isLogin) return '/login';
-      if (isLoggedIn && isLogin) return '/home';
+      if (!isLoggedIn && !isAuthPage) return '/login';
+      if (isLoggedIn && isAuthPage) return '/home';
       return null;
     },
     routes: [
@@ -36,7 +37,14 @@ class AppRouter {
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-      GoRoute(path: '/onboarding', builder: (context, state) => const Onboardingscreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const Onboardingscreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
     ],
   );
 }

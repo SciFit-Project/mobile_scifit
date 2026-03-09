@@ -4,30 +4,36 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/features/auth/data/auth_repository.dart';
 
-class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+class RegisterForm extends StatefulWidget {
+  const RegisterForm({super.key});
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<RegisterForm> createState() => _RegisterFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _RegisterFormState extends State<RegisterForm> {
+  final _fullnameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  final _confirmController = TextEditingController();
   final AuthRepository _authRepo = AuthRepository();
 
   @override
   void dispose() {
+    _fullnameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
   void _onSubmit() async {
+    final fullname = _fullnameController.text;
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    if (email.isEmpty || password.isEmpty) {
+    final confirm = _confirmController.text;
+
+    if (email.isEmpty || password.isEmpty || confirm.isEmpty || fullname.isEmpty) {
       _showError('Please fill in all fields');
       return;
     }
@@ -38,24 +44,31 @@ class _LoginFormState extends State<LoginForm> {
       return;
     }
 
+    if (fullname.length < 8) {
+      _showError('Fullname must be at least 3 characters');
+      return;
+    }
     if (password.length < 8) {
       _showError('Password must be at least 8 characters');
       return;
     }
 
+    if (password != confirm) {
+      _showError('Passwords do not match');
+      return;
+    }
+
     try {
-      final response = await _authRepo.signInWithEmail(email, password);
-
+      final response = await _authRepo.signUpWithEmail(fullname, email, password);
       if (!mounted) return;
-
       if (response != null && response.statusCode == 200) {
-        context.go('/home');
+        context.go('/onboarding');
       } else {
-        _showError('Invalid email or password');
+        _showError('Registration failed. Try again.');
       }
     } catch (e) {
       if (!mounted) return;
-      _showError('Login failed: ${e.toString()}');
+      _showError('Error: ${e.toString()}');
     }
   }
 
@@ -79,6 +92,12 @@ class _LoginFormState extends State<LoginForm> {
     return Column(
       children: [
         _buildTextField(
+          controller: _fullnameController,
+          hint: 'Full name',
+          icon: Icons.person,
+        ),
+        const Gap(16),
+        _buildTextField(
           controller: _emailController,
           hint: 'Email address',
           icon: Icons.email_outlined,
@@ -90,8 +109,14 @@ class _LoginFormState extends State<LoginForm> {
           icon: Icons.lock_outline,
           isPassword: true,
         ),
+        const Gap(16),
+        _buildTextField(
+          controller: _confirmController,
+          hint: 'Confirm password',
+          icon: Icons.lock_outline,
+          isPassword: true,
+        ),
         const Gap(24),
-
         SizedBox(
           width: double.infinity,
           height: 60,
@@ -104,7 +129,7 @@ class _LoginFormState extends State<LoginForm> {
               elevation: 0,
             ),
             child: Text(
-              "Login",
+              "Create Account",
               style: GoogleFonts.spaceGrotesk(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -112,20 +137,19 @@ class _LoginFormState extends State<LoginForm> {
             ),
           ),
         ),
-
         const Gap(16),
         TextButton(
-          onPressed: () => context.go('/register'),
+          onPressed: () => context.go('/login'),
           child: RichText(
             text: TextSpan(
               style: GoogleFonts.spaceGrotesk(
                 color: Colors.grey[500],
-                fontSize: 14,
+                fontSize: 13,
               ),
               children: const [
-                TextSpan(text: "Don't have an account? "),
+                TextSpan(text: "Already have an account? "),
                 TextSpan(
-                  text: "Create one",
+                  text: "Sign in",
                   style: TextStyle(
                     color: Color(0xFF4285F4),
                     fontWeight: FontWeight.w700,
