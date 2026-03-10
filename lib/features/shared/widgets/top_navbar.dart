@@ -42,9 +42,14 @@ class TopNavbar extends StatelessWidget {
               ),
             ),
             Text(
-              DateFormat(
-                'EEEE,  MMM d',
-              ).format(DateTime.now()),
+              DateFormat('EEEE,  MMM d').format(DateTime.now()),
+              style: GoogleFonts.spaceGrotesk(
+                color: const Color(0xFF888888),
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              "Last updated: ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
               style: GoogleFonts.spaceGrotesk(
                 color: const Color(0xFF888888),
                 fontSize: 13,

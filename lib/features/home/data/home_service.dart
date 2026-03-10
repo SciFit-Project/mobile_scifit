@@ -14,46 +14,54 @@ class HomeService {
         types: [HealthDataType.STEPS],
       );
 
-      int wearableSteps = 0;
+      List<HealthDataPoint> wearablePoints = [];
       List<HealthDataPoint> mobilePoints = [];
 
       for (var p in data) {
         String source = p.sourceName.toLowerCase();
+
+        int val = (p.value as NumericHealthValue).numericValue.toInt();
+        print("DEBUG: Source: $source | Value: $val | Time: ${p.dateFrom} - ${p.dateTo}");
+        
         if (source.contains("xiaomi") || source.contains("wearable")) {
-          wearableSteps += (p.value as NumericHealthValue).numericValue.toInt();
+          wearablePoints.add(p);
         } else {
           mobilePoints.add(p);
         }
       }
 
-      int mobileSteps = 0;
-      bool hasSamsungData = mobilePoints.any(
-        (p) => p.sourceName.toLowerCase().contains("shealth"),
-      );
+      int calculateSteps(List<HealthDataPoint> points) {
+        if (points.isEmpty) return 0;
 
-      if (hasSamsungData) {
-        mobileSteps = mobilePoints
-            .where((p) => p.sourceName.toLowerCase().contains("shealth"))
-            .fold(
-              0,
-              (sum, p) =>
-                  sum + (p.value as NumericHealthValue).numericValue.toInt(),
-            );
-      } else {
-        Map<String, int> uniquePoints = {};
-        for (var p in mobilePoints) {
-          String key =
-              "${p.dateFrom.millisecondsSinceEpoch}-${p.dateTo.millisecondsSinceEpoch}";
+        int totalSum = 0;
+        int maxSummaryValue = 0;
+        bool hasSummary = false;
+
+        for (var p in points) {
           int val = (p.value as NumericHealthValue).numericValue.toInt();
-          if (!uniquePoints.containsKey(key) || val > uniquePoints[key]!) {
-            uniquePoints[key] = val;
+
+          int durationMs =
+              p.dateTo.millisecondsSinceEpoch -
+              p.dateFrom.millisecondsSinceEpoch;
+
+          if (durationMs > 3600000) {
+            hasSummary = true;
+            if (val > maxSummaryValue) maxSummaryValue = val;
+          } else {
+            totalSum += val;
           }
         }
-        mobileSteps = uniquePoints.values.fold(0, (sum, v) => sum + v);
+
+        return hasSummary ? maxSummaryValue : totalSum;
       }
 
-      return {'mobile': mobileSteps, 'wearable': wearableSteps};
+      int wearableTotal = calculateSteps(wearablePoints);
+      int mobileTotal = calculateSteps(mobilePoints);
+
+      print("Final Result -> Mobile: $mobileTotal, Wearable: $wearableTotal");
+      return {'mobile': mobileTotal, 'wearable': wearableTotal};
     } catch (e) {
+      print("Error getting steps: $e");
       return {'mobile': 0, 'wearable': 0};
     }
   }

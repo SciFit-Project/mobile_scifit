@@ -33,7 +33,10 @@ class _RegisterFormState extends State<RegisterForm> {
     final password = _passwordController.text;
     final confirm = _confirmController.text;
 
-    if (email.isEmpty || password.isEmpty || confirm.isEmpty || fullname.isEmpty) {
+    if (email.isEmpty ||
+        password.isEmpty ||
+        confirm.isEmpty ||
+        fullname.isEmpty) {
       _showError('Please fill in all fields');
       return;
     }
@@ -44,7 +47,8 @@ class _RegisterFormState extends State<RegisterForm> {
       return;
     }
 
-    if (fullname.length < 8) {
+    if (fullname.length < 3) {
+      print(fullname);
       _showError('Fullname must be at least 3 characters');
       return;
     }
@@ -59,10 +63,28 @@ class _RegisterFormState extends State<RegisterForm> {
     }
 
     try {
-      final response = await _authRepo.signUpWithEmail(fullname, email, password);
+      final response = await _authRepo.signUpWithEmail(
+        fullname,
+        email,
+        password,
+      );
+
       if (!mounted) return;
-      if (response != null && response.statusCode == 200) {
-        context.go('/onboarding');
+
+      if (response != null && response.statusCode == 201) {
+        try {
+          await _authRepo.signInWithEmail(email, password);
+
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          if (!mounted) return;
+          context.go('/onboarding');
+        } catch (loginError) {
+          if (!mounted) return;
+          print("DEBUG: Login failed with error: $loginError");
+          context.go('/login');
+          _showError('Account created! Please login to continue.');
+        }
       } else {
         _showError('Registration failed. Try again.');
       }

@@ -28,21 +28,34 @@ class AuthRepository {
   }
 
   Future<Response?> signInWithEmail(String email, String password) async {
-    final response = await _dio.post(
-      '/api/auth/login',
-      data: {'email': email, 'password': password},
-    );
-    if (response.data['success'] && response.data['token'] != "") {
-      await SecureStorageService.saveToken(response.data['token']);
-      return response;
+    try {
+      final response = await _dio.post(
+        '/api/auth/login',
+        data: {'email': email, 'password': password},
+      );
+
+      final data = response.data;
+      if (data is Map &&
+          data['success'] == true &&
+          data['accessToken'] != null) {
+        await SecureStorageService.saveToken(data['accessToken']);
+        return response;
+      }
+
+      throw Exception("Login failed: Invalid credentials or missing token");
+    } catch (e) {
+      rethrow;
     }
-    return response;
   }
 
-  Future<Response?> signUpWithEmail(String fullname ,String email, String password) async {
+  Future<Response?> signUpWithEmail(
+    String fullname,
+    String email,
+    String password,
+  ) async {
     final response = await _dio.post(
       '/api/auth/signup',
-      data: {'email': email, 'password': password},
+      data: {'fullname': fullname, 'email': email, 'password': password},
     );
     return response;
   }

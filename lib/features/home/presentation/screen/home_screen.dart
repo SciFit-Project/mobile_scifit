@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/features/home/data/home_service.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/sleep_dashboard.dart';
+import 'package:mobile_scifit/features/home/presentation/widgets/stat_info.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/step_card.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
 
@@ -56,7 +57,44 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const TopNavbar(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 2,
+                  children: const [
+                    StatInfoCard(
+                      label: 'CURRENT WEIGHT',
+                      value: '75.5',
+                      unit: 'kg',
+                    ),
+                    StatInfoCard(label: 'BMR', value: '1,820', unit: 'kcal'),
+                    StatInfoCard(label: 'TDEE', value: '2,548', unit: 'kcal'),
+                    StatInfoCard(label: 'GOAL', value: 'Maintainace', unit: ''),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                ElevatedButton(
+                  onPressed: () => context.push('/workout-plan/mock-day-id'),
+                  // onPressed: () => context.push('/workout-plan'), 
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6C63FF),
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Start Workout',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
 
                 const SizedBox(height: 16),
 
@@ -71,16 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 _isLoading
                     ? const SizedBox.shrink()
                     : SleepDashboard(weeklySleep: _weekSleepData),
-
-                const SizedBox(height: 24),
-
-                Text(
-                  "Last updated: ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
-                  style: GoogleFonts.spaceGrotesk(
-                    color: const Color(0xFF888888),
-                    fontSize: 13,
-                  ),
-                ),
               ],
             ),
           ),
