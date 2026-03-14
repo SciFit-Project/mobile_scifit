@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
 import 'package:mobile_scifit/features/auth/presentation/screens/register_screen.dart';
 import 'package:mobile_scifit/features/home/presentation/screen/home_screen.dart';
+import 'package:mobile_scifit/features/home/presentation/widgets/steps/steps_history_screen.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/screen/onboardingscreen.dart';
 import 'package:mobile_scifit/features/workout/presentation/screens/exercise_log_screen.dart';
 import 'package:mobile_scifit/features/workout/presentation/screens/workout_screen.dart';
@@ -67,6 +68,10 @@ class AppRouter {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/steps-history',
+        builder: (context, state) => const StepsHistoryScreen(),
       ),
     ],
   );
