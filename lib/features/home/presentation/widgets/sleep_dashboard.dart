@@ -227,10 +227,10 @@ class _SleepDashboardState extends State<SleepDashboard>
             const SizedBox(height: 12),
           const SizedBox(height: 3),
           Container(
-            width: isToday ? 22 : 16,
+            width: 16,
             height: math.max(barHeight, 5),
             decoration: BoxDecoration(
-              color: isToday ? color : color.withAlpha(5),
+              color: color,
               borderRadius: BorderRadius.circular(5),
             ),
           ),
@@ -239,7 +239,7 @@ class _SleepDashboardState extends State<SleepDashboard>
             label,
             style: GoogleFonts.spaceGrotesk(
               color: isToday ? const Color(0xFF4285F4) : Colors.grey[400],
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
             ),
           ),

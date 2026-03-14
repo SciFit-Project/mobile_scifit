@@ -1,41 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:gap/gap.dart';
 
 class StatInfoCard extends StatelessWidget {
   final String label;
   final String value;
   final String unit;
+  final IconData icon;
 
   const StatInfoCard({
     super.key,
     required this.label,
     required this.value,
     required this.unit,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    const color = AppTheme.primaryLight;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundLight,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(left: BorderSide(color: color, width: 4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              // color: Color(0xFF9E9E9E),
-              letterSpacing: 0.5,
-            ),
+          Row(
+            children: [
+              Icon(icon, size: 14),
+              const Gap(2),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, letterSpacing: 0.5),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
