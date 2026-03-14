@@ -3,9 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 
 class MainNavbar extends StatelessWidget {
-  final int currentIndex;
+  const MainNavbar({super.key});
 
-  const MainNavbar({super.key, required this.currentIndex});
+  int _getIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+
+    if (location.startsWith('/home')) return 0;
+    if (location.startsWith('/my-plans')) return 1;
+    if (location.startsWith('/progress')) return 2;
+    if (location.startsWith('/profile')) return 3;
+
+    return 0;
+  }
 
   void _onTap(BuildContext context, int index) {
     switch (index) {
@@ -13,7 +22,7 @@ class MainNavbar extends StatelessWidget {
         context.go('/home');
         break;
       case 1:
-        context.go('/workout');
+        context.go('/my-plans');
         break;
       case 2:
         context.go('/progress');
@@ -26,6 +35,8 @@ class MainNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = _getIndex(context);
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onTap(context, index),

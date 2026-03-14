@@ -7,7 +7,6 @@ import 'package:mobile_scifit/features/home/presentation/widgets/sleep_dashboard
 import 'package:mobile_scifit/features/home/presentation/widgets/stat_info.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/steps/step_card.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/workout_card.dart';
-import 'package:mobile_scifit/features/shared/widgets/main_navbar.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -108,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   totalExercise: 6,
                   timeDuration: 45,
                 ),
-                
+
                 const SizedBox(height: 16),
 
                 _isLoading
@@ -135,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const MainNavbar(currentIndex: 0),
     );
   }
 }
