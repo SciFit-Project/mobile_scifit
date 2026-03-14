@@ -23,7 +23,6 @@ class TopNavbar extends StatelessWidget {
           },
           child: CircleAvatar(
             radius: 22,
-            backgroundColor: const Color(0xFF1E1E1E),
             backgroundImage: avatar != null ? NetworkImage(avatar) : null,
             child: avatar == null
                 ? const Icon(Icons.person, color: Colors.white54)
@@ -34,27 +33,26 @@ class TopNavbar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Hello ${name.split(' ').first}",
+              "Hello ${name.split(' ').first} 👋🏽",
               style: GoogleFonts.spaceGrotesk(
-                color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
             ),
             Text(
-              DateFormat('EEEE,  MMM d').format(DateTime.now()),
+              DateFormat('EEEE,  MMMM d').format(DateTime.now()),
               style: GoogleFonts.spaceGrotesk(
                 color: const Color(0xFF888888),
                 fontSize: 13,
               ),
             ),
-            Text(
-              "Last updated: ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
-              style: GoogleFonts.spaceGrotesk(
-                color: const Color(0xFF888888),
-                fontSize: 13,
-              ),
-            ),
+            // Text(
+            //   "Last updated: ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}",
+            //   style: GoogleFonts.spaceGrotesk(
+            //     color: const Color(0xFF888888),
+            //     fontSize: 13,
+            //   ),
+            // ),
           ],
         ),
       ],
