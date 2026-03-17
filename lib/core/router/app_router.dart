@@ -10,7 +10,10 @@ import 'package:mobile_scifit/features/plans/presentation/screens/create_plan_sc
 import 'package:mobile_scifit/features/plans/presentation/screens/day_builder_screen.dart';
 import 'package:mobile_scifit/features/plans/presentation/screens/plans_screen.dart';
 import 'package:mobile_scifit/features/plans/presentation/screens/plan_details_screen.dart';
+import 'package:mobile_scifit/features/profile/presentation/screens/edit_profile_screen.dart';
+import 'package:mobile_scifit/features/profile/presentation/screens/goal_setting_screen.dart';
 import 'package:mobile_scifit/features/profile/presentation/screens/profile_page.dart';
+import 'package:mobile_scifit/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mobile_scifit/features/progress/presentation/screens/progress_page.dart';
 import 'package:mobile_scifit/features/shared/widgets/main_navbar.dart';
 import 'package:mobile_scifit/features/workout/presentation/screens/exercise_log_screen.dart';
@@ -83,6 +86,19 @@ class AppRouter {
           ),
         ],
       ),
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/goals',
+        builder: (context, state) => const GoalSettingScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+
       ShellRoute(
         builder: (context, state, child) {
           return Scaffold(body: child, bottomNavigationBar: const MainNavbar());
