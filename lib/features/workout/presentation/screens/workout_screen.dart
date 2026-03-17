@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/exercise_row.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/finish_workout_button.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/workout_progress.dart';
@@ -17,38 +18,30 @@ class WorkoutPlanScreen extends StatefulWidget {
 }
 
 class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
-  final List<WorkoutExercise> _exercises = [
-    WorkoutExercise(
-      id: '1',
-      name: 'Bench Press',
-      sets: 4,
-      reps: '8-12',
-      muscleGroup: "chest",
-    ),
-    WorkoutExercise(
-      id: '2',
-      name: 'Incline Dumbbell',
-      sets: 3,
-      reps: '10-12',
-      muscleGroup: "chest",
-    ),
-    WorkoutExercise(
-      id: '3',
-      name: 'Cable Fly',
-      sets: 3,
-      reps: '12-15',
-      muscleGroup: "chest",
-    ),
-    WorkoutExercise(
-      id: '4',
-      name: 'Tricep Pushdown',
-      sets: 3,
-      reps: '12-15',
-      muscleGroup: "triceps",
-    ),
-  ];
+  late final List<WorkoutExercise> _exercises;
+  late final String _workoutTitle;
 
   final String _sessionId = 'mock-session-id';
+
+  @override
+  void initState() {
+    super.initState();
+    final day = getWorkoutDayById(widget.dayId);
+    _workoutTitle = day?.name ?? 'Workout';
+    _exercises =
+        day?.exercises
+            .map(
+              (exercise) => WorkoutExercise(
+                id: exercise.exerciseId,
+                name: exercise.name,
+                sets: exercise.sets,
+                reps: '${exercise.reps}',
+                muscleGroup: exercise.muscleGroup.toLowerCase(),
+              ),
+            )
+            .toList() ??
+        [];
+  }
 
   void _markDone(int index) {
     setState(() {
@@ -69,7 +62,7 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         title: Text(
-          'Push Day',
+          _workoutTitle,
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
         ),
       ),

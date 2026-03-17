@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health/health.dart'; // อย่าลืมลงทะเบียน package: health ใน pubspec.yaml
+import 'package:health/health.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 
 class Permisson extends StatefulWidget {
-  final Function(bool isValid)
-  onValidChanged; 
+  final Function(bool isValid) onValidChanged;
 
   const Permisson({super.key, required this.onValidChanged});
 
@@ -38,6 +37,8 @@ class _PermissonState extends State<Permisson> {
     try {
       bool requested = await health.requestAuthorization(types);
 
+      if (!mounted) return;
+
       setState(() {
         _isAuthorized = requested;
       });
@@ -50,7 +51,12 @@ class _PermissonState extends State<Permisson> {
         );
       }
     } catch (e) {
-      print("Error requesting health data: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not connect health data right now'),
+        ),
+      );
     }
   }
 

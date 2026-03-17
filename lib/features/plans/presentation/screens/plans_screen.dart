@@ -118,7 +118,14 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
-                onPressed: () => {},
+                onPressed: () {
+                  setState(() {
+                    setActiveMockPlan(planId);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('$planTitle activated')),
+                  );
+                },
                 style: TextButton.styleFrom(
                   backgroundColor: AppTheme.primaryLight.withAlpha(30),
                 ),

@@ -1,12 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
-  // Config ตาม Example ล่าสุด
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-      biometricPromptTitle: 'Secure Access',
-    ),
+    aOptions: AndroidOptions(biometricPromptTitle: 'Secure Access'),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock,
       synchronizable: true,

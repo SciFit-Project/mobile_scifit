@@ -14,7 +14,7 @@ class Information extends StatefulWidget {
 
 class _InfomationState extends State<Information>
     with AutomaticKeepAliveClientMixin {
-  String? _selectedGender; // สำหรับเก็บค่า Gender
+  String? _selectedGender;
 
   @override
   bool get wantKeepAlive => true;
@@ -56,7 +56,6 @@ class _InfomationState extends State<Information>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Input Fields ---
           _buildInputField(
             label: "Age",
             hint: "e.g. 25",
@@ -80,7 +79,6 @@ class _InfomationState extends State<Information>
 
           const SizedBox(height: 32),
 
-          // --- Gender Selection ---
           Text(
             "Gender",
             style: GoogleFonts.spaceGrotesk(
@@ -101,7 +99,6 @@ class _InfomationState extends State<Information>
     );
   }
 
-  // Widget ช่วยสร้าง TextField
   Widget _buildInputField({
     required String label,
     required String hint,
@@ -148,20 +145,23 @@ class _InfomationState extends State<Information>
   }
 
   String? _getErrorText(String label, String value) {
-    if (value.isEmpty) return null; // ยังไม่พิมพ์ไม่ต้องโชว์
+    if (value.isEmpty) return null;
     num? val = num.tryParse(value);
     if (val == null) return "Invalid number";
 
-    if (label == "Age" && (val < 10 || val > 100)) return "Age must be 10-100";
-    if (label == "Height (cm)" && (val < 100 || val > 250))
+    if (label == "Age" && (val < 10 || val > 100)) {
+      return "Age must be 10-100";
+    }
+    if (label == "Height (cm)" && (val < 100 || val > 250)) {
       return "Height must be 100-250";
-    if (label == "Weight (kg)" && (val < 30 || val > 300))
+    }
+    if (label == "Weight (kg)" && (val < 30 || val > 300)) {
       return "Weight must be 30-300";
+    }
 
     return null;
   }
 
-  // Widget ช่วยสร้าง Radio แบบ Custom (ดู Modern กว่า Radio ปกติ)
   Widget _buildGenderOption(String value, IconData icon) {
     bool isSelected = _selectedGender == value;
     return GestureDetector(

@@ -1,6 +1,5 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/onboarding/data/onboard_data_model.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/onboard_header.dart';
@@ -8,6 +7,7 @@ import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/act
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/goal.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/infomation.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/permisson.dart';
+import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class Onboardingscreen extends StatefulWidget {
@@ -27,7 +27,6 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
 
   @override
   void initState() {
-    super.initState();
     super.initState();
     _steps = [
       Information(
@@ -68,15 +67,66 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
   }
 
   void _submitData() {
-    print("--- CLICKED GET STARTED ---");
+    final profile = mockProfileStore.value;
+    final age = _collectedData.age ?? profile.age;
+    final now = DateTime.now();
 
-    print("Age: ${_collectedData.age}");
-    print("Height: ${_collectedData.height}");
-    print("Weight: ${_collectedData.weight}");
-    print("Gender: ${_collectedData.gender}");
-    print("Plan: ${_collectedData.plan}");
-    print("Activity: ${_collectedData.activityLevel}");
-    // print("Final Data collected: ${_collectedData.toJson()}");
+    mockProfileStore.patch(
+      (current) => current.copyWith(
+        weightKg: _collectedData.weight ?? current.weightKg,
+        heightCm: _collectedData.height ?? current.heightCm,
+        gender: _mapGender(_collectedData.gender) ?? current.gender,
+        goalType: _mapGoal(_collectedData.plan) ?? current.goalType,
+        activityLevel:
+            _mapActivityLevel(_collectedData.activityLevel) ??
+            current.activityLevel,
+        dateOfBirth: DateTime(now.year - age, now.month, now.day),
+        healthConnectGranted: _isPageValid[3],
+      ),
+    );
+
+    context.go('/home');
+  }
+
+  ProfileGender? _mapGender(String? gender) {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return ProfileGender.male;
+      case 'female':
+        return ProfileGender.female;
+      case 'other':
+        return ProfileGender.other;
+      default:
+        return null;
+    }
+  }
+
+  ProfileGoalType? _mapGoal(String? goal) {
+    switch (goal?.toLowerCase()) {
+      case 'cutting':
+        return ProfileGoalType.fatLoss;
+      case 'bulking':
+        return ProfileGoalType.muscleGain;
+      case 'maintenance':
+        return ProfileGoalType.maintain;
+      default:
+        return null;
+    }
+  }
+
+  ProfileActivityLevel? _mapActivityLevel(String? activityLevel) {
+    switch (activityLevel?.toLowerCase()) {
+      case 'sedentary':
+        return ProfileActivityLevel.sedentary;
+      case 'light exercise':
+        return ProfileActivityLevel.lightlyActive;
+      case 'moderate exercise':
+        return ProfileActivityLevel.active;
+      case 'heavy exercise':
+        return ProfileActivityLevel.veryActive;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -148,7 +198,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                   if (_currentPage > 0) const SizedBox(width: 12),
 
                   Expanded(
-                    flex: 4, 
+                    flex: 4,
                     child: ElevatedButton(
                       onPressed: _isPageValid[_currentPage]
                           ? () {
@@ -161,7 +211,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                                 _submitData();
                               }
                             }
-                          : null, 
+                          : null,
                       child: Text(
                         _currentPage == _steps.length - 1
                             ? "Get Started"

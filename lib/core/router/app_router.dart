@@ -69,6 +69,10 @@ class AppRouter {
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const Onboardingscreen(),
+      ),
+      GoRoute(
         path: '/plans/new',
         builder: (context, state) => const CreatePlan(),
       ),
@@ -125,10 +129,6 @@ class AppRouter {
           return Scaffold(body: child, bottomNavigationBar: const MainNavbar());
         },
         routes: [
-          GoRoute(
-            path: '/onboarding',
-            builder: (context, state) => const Onboardingscreen(),
-          ),
           GoRoute(
             path: '/home',
             builder: (context, state) => const HomeScreen(),

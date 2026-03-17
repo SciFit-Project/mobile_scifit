@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class ActiveCard extends StatelessWidget {
@@ -140,7 +141,15 @@ class ActiveCard extends StatelessWidget {
                     child: SizedBox(
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () => context.push('/${plans.id}'),
+                        onPressed: () {
+                          setActiveMockPlan(null);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${plans.name} deactivated'),
+                            ),
+                          );
+                          context.go('/plans');
+                        },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),

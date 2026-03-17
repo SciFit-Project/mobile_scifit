@@ -48,7 +48,6 @@ class _RegisterFormState extends State<RegisterForm> {
     }
 
     if (fullname.length < 3) {
-      print(fullname);
       _showError('Fullname must be at least 3 characters');
       return;
     }
@@ -81,7 +80,6 @@ class _RegisterFormState extends State<RegisterForm> {
           context.go('/onboarding');
         } catch (loginError) {
           if (!mounted) return;
-          print("DEBUG: Login failed with error: $loginError");
           context.go('/login');
           _showError('Account created! Please login to continue.');
         }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 
@@ -8,11 +7,13 @@ class WorkoutCard extends StatelessWidget {
   final String workoutTitle;
   final int totalExercise;
   final int timeDuration;
+  final VoidCallback onStartWorkout;
   const WorkoutCard({
     super.key,
     required this.workoutTitle,
     required this.totalExercise,
     required this.timeDuration,
+    required this.onStartWorkout,
   });
 
   @override
@@ -67,14 +68,14 @@ class WorkoutCard extends StatelessWidget {
               const Gap(5),
 
               const Icon(Icons.circle, size: 5, color: Colors.white),
-              
+
               const Gap(5),
 
               const Icon(Icons.timer_sharp, size: 13, color: Colors.white),
               const Gap(5),
 
               Text(
-                "~$totalExercise min",
+                "~$timeDuration min",
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -86,7 +87,7 @@ class WorkoutCard extends StatelessWidget {
           const Gap(16),
 
           ElevatedButton(
-            onPressed: () => context.push('/workout-plan/mock-day-id'),
+            onPressed: onStartWorkout,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white.withAlpha(10),
               minimumSize: const Size(double.infinity, 52),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
 class HomeService {
@@ -131,7 +132,7 @@ class HomeService {
 
       return bpm;
     } catch (e) {
-      print("Error reading heart rate: $e");
+      debugPrint("Error reading heart rate: $e");
       return 0;
     }
   }
@@ -178,7 +179,7 @@ class HomeService {
 
       return {'mobile': mobileCalories, 'wearable': wearableCalories};
     } catch (e) {
-      print("Error getting calories: $e");
+      debugPrint("Error getting calories: $e");
       return {'mobile': 0, 'wearable': 0};
     }
   }

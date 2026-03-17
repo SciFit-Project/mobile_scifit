@@ -7,6 +7,8 @@ import 'package:mobile_scifit/features/home/presentation/widgets/sleep_dashboard
 import 'package:mobile_scifit/features/home/presentation/widgets/stat_info.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/steps/step_card.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/workout_card.dart';
+import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -53,6 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activePlan = getActiveMockPlan();
+    final activeDay = activePlan?.days.isNotEmpty == true
+        ? activePlan!.days.first
+        : null;
+
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -66,46 +73,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 const TopNavbar(),
                 const SizedBox(height: 16),
 
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2,
-                  children: const [
-                    StatInfoCard(
-                      label: 'CURRENT WEIGHT',
-                      value: '75.5',
-                      unit: 'kg',
-                      icon: Icons.line_axis,
-                    ),
-                    StatInfoCard(
-                      label: 'CURRENT GOAL',
-                      value: 'CUTTING',
-                      unit: '',
-                      icon: Icons.local_fire_department,
-                    ),
-                    StatInfoCard(
-                      label: 'BMR',
-                      value: '1,820',
-                      unit: 'kcal',
-                      icon: Icons.local_fire_department_outlined,
-                    ),
-                    StatInfoCard(
-                      label: 'TDEE',
-                      value: '2,750',
-                      unit: 'kcal',
-                      icon: Icons.line_axis,
-                    ),
-                  ],
+                ValueListenableBuilder<MockUserProfile>(
+                  valueListenable: mockProfileStore,
+                  builder: (context, profile, _) {
+                    return GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 2,
+                      children: [
+                        StatInfoCard(
+                          label: 'CURRENT WEIGHT',
+                          value: profile.weightKg.toStringAsFixed(1),
+                          unit: 'kg',
+                          icon: Icons.line_axis,
+                        ),
+                        StatInfoCard(
+                          label: 'CURRENT GOAL',
+                          value: profile.goalType.label.toUpperCase(),
+                          unit: '',
+                          icon: Icons.local_fire_department,
+                        ),
+                        StatInfoCard(
+                          label: 'BMR',
+                          value: profile.bmr.round().toString(),
+                          unit: 'kcal',
+                          icon: Icons.local_fire_department_outlined,
+                        ),
+                        StatInfoCard(
+                          label: 'TDEE',
+                          value: profile.tdee.round().toString(),
+                          unit: 'kcal',
+                          icon: Icons.line_axis,
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
 
-                const WorkoutCard(
-                  workoutTitle: 'PPL Program - Push Day A',
-                  totalExercise: 6,
-                  timeDuration: 45,
+                WorkoutCard(
+                  workoutTitle: activePlan == null || activeDay == null
+                      ? 'No active workout plan'
+                      : '${activePlan.name} - ${activeDay.name}',
+                  totalExercise: activeDay?.exercises.length ?? 0,
+                  timeDuration: activePlan?.stats.estDurationMin ?? 0,
+                  onStartWorkout: () {
+                    if (activeDay == null) {
+                      context.push('/plans');
+                      return;
+                    }
+                    context.push('/workout-plan/${activeDay.id}');
+                  },
                 ),
 
                 const SizedBox(height: 16),

@@ -445,47 +445,288 @@ final List<MyPlans> myMockPlans = [
   ),
 ];
 
+MyPlans? getActiveMockPlan() {
+  for (final plan in myMockPlans) {
+    if (plan.isActive) return plan;
+  }
+  return null;
+}
+
+WorkoutDay? getWorkoutDayById(String dayId) {
+  for (final plan in myMockPlans) {
+    for (final day in plan.days) {
+      if (day.id == dayId) return day;
+    }
+  }
+  return null;
+}
+
+void setActiveMockPlan(String? planId) {
+  for (var i = 0; i < myMockPlans.length; i++) {
+    final current = myMockPlans[i];
+    myMockPlans[i] = MyPlans(
+      id: current.id,
+      userId: current.userId,
+      name: current.name,
+      description: current.description,
+      isActive: current.id == planId,
+      createdAt: current.createdAt,
+      days: current.days,
+      stats: current.stats,
+    );
+  }
+}
 
 final List<Exercise> mockExercises = [
   // ── Chest ──
-  Exercise(id: 'ex-001', name: 'Barbell Bench Press',  muscleGroup: MuscleGroup.chest,     secondaryMuscles: ['shoulders', 'arms'], equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-002', name: 'Incline Dumbbell Press',muscleGroup: MuscleGroup.chest,     secondaryMuscles: ['shoulders', 'arms'], equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-003', name: 'Cable Fly',             muscleGroup: MuscleGroup.chest,     secondaryMuscles: ['shoulders'],         equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-004', name: 'Chest Dip',             muscleGroup: MuscleGroup.chest,     secondaryMuscles: ['arms', 'shoulders'], equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-005', name: 'Machine Chest Press',   muscleGroup: MuscleGroup.chest,     secondaryMuscles: ['shoulders', 'arms'], equipment: Equipment.machine,    createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-001',
+    name: 'Barbell Bench Press',
+    muscleGroup: MuscleGroup.chest,
+    secondaryMuscles: ['shoulders', 'arms'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-002',
+    name: 'Incline Dumbbell Press',
+    muscleGroup: MuscleGroup.chest,
+    secondaryMuscles: ['shoulders', 'arms'],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-003',
+    name: 'Cable Fly',
+    muscleGroup: MuscleGroup.chest,
+    secondaryMuscles: ['shoulders'],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-004',
+    name: 'Chest Dip',
+    muscleGroup: MuscleGroup.chest,
+    secondaryMuscles: ['arms', 'shoulders'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-005',
+    name: 'Machine Chest Press',
+    muscleGroup: MuscleGroup.chest,
+    secondaryMuscles: ['shoulders', 'arms'],
+    equipment: Equipment.machine,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 
   // ── Back ──
-  Exercise(id: 'ex-006', name: 'Deadlift',              muscleGroup: MuscleGroup.back,      secondaryMuscles: ['legs', 'arms'],      equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-007', name: 'Pull-Up',               muscleGroup: MuscleGroup.back,      secondaryMuscles: ['arms', 'shoulders'], equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-008', name: 'Barbell Row',           muscleGroup: MuscleGroup.back,      secondaryMuscles: ['arms'],              equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-009', name: 'Lat Pulldown',          muscleGroup: MuscleGroup.back,      secondaryMuscles: ['arms', 'shoulders'], equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-010', name: 'Cable Row',             muscleGroup: MuscleGroup.back,      secondaryMuscles: ['arms'],              equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-006',
+    name: 'Deadlift',
+    muscleGroup: MuscleGroup.back,
+    secondaryMuscles: ['legs', 'arms'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-007',
+    name: 'Pull-Up',
+    muscleGroup: MuscleGroup.back,
+    secondaryMuscles: ['arms', 'shoulders'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-008',
+    name: 'Barbell Row',
+    muscleGroup: MuscleGroup.back,
+    secondaryMuscles: ['arms'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-009',
+    name: 'Lat Pulldown',
+    muscleGroup: MuscleGroup.back,
+    secondaryMuscles: ['arms', 'shoulders'],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-010',
+    name: 'Cable Row',
+    muscleGroup: MuscleGroup.back,
+    secondaryMuscles: ['arms'],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 
   // ── Shoulders ──
-  Exercise(id: 'ex-011', name: 'Overhead Press',        muscleGroup: MuscleGroup.shoulders, secondaryMuscles: ['arms'],              equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-012', name: 'Lateral Raise',         muscleGroup: MuscleGroup.shoulders, secondaryMuscles: [],                   equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-013', name: 'Rear Delt Fly',         muscleGroup: MuscleGroup.shoulders, secondaryMuscles: ['back'],             equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-014', name: 'Arnold Press',          muscleGroup: MuscleGroup.shoulders, secondaryMuscles: ['arms'],             equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-015', name: 'Face Pull',             muscleGroup: MuscleGroup.shoulders, secondaryMuscles: ['back'],             equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-011',
+    name: 'Overhead Press',
+    muscleGroup: MuscleGroup.shoulders,
+    secondaryMuscles: ['arms'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-012',
+    name: 'Lateral Raise',
+    muscleGroup: MuscleGroup.shoulders,
+    secondaryMuscles: [],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-013',
+    name: 'Rear Delt Fly',
+    muscleGroup: MuscleGroup.shoulders,
+    secondaryMuscles: ['back'],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-014',
+    name: 'Arnold Press',
+    muscleGroup: MuscleGroup.shoulders,
+    secondaryMuscles: ['arms'],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-015',
+    name: 'Face Pull',
+    muscleGroup: MuscleGroup.shoulders,
+    secondaryMuscles: ['back'],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 
   // ── Legs ──
-  Exercise(id: 'ex-016', name: 'Barbell Squat',         muscleGroup: MuscleGroup.legs,      secondaryMuscles: ['core'],             equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-017', name: 'Romanian Deadlift',     muscleGroup: MuscleGroup.legs,      secondaryMuscles: ['back', 'core'],     equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-018', name: 'Leg Press',             muscleGroup: MuscleGroup.legs,      secondaryMuscles: [],                   equipment: Equipment.machine,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-019', name: 'Bulgarian Split Squat', muscleGroup: MuscleGroup.legs,      secondaryMuscles: ['core'],             equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-020', name: 'Calf Raise',            muscleGroup: MuscleGroup.legs,      secondaryMuscles: [],                   equipment: Equipment.machine,    createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-016',
+    name: 'Barbell Squat',
+    muscleGroup: MuscleGroup.legs,
+    secondaryMuscles: ['core'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-017',
+    name: 'Romanian Deadlift',
+    muscleGroup: MuscleGroup.legs,
+    secondaryMuscles: ['back', 'core'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-018',
+    name: 'Leg Press',
+    muscleGroup: MuscleGroup.legs,
+    secondaryMuscles: [],
+    equipment: Equipment.machine,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-019',
+    name: 'Bulgarian Split Squat',
+    muscleGroup: MuscleGroup.legs,
+    secondaryMuscles: ['core'],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-020',
+    name: 'Calf Raise',
+    muscleGroup: MuscleGroup.legs,
+    secondaryMuscles: [],
+    equipment: Equipment.machine,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 
   // ── Arms ──
-  Exercise(id: 'ex-021', name: 'Barbell Curl',          muscleGroup: MuscleGroup.arms,      secondaryMuscles: ['shoulders'],        equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-022', name: 'Hammer Curl',           muscleGroup: MuscleGroup.arms,      secondaryMuscles: [],                   equipment: Equipment.dumbbell,   createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-023', name: 'Tricep Pushdown',       muscleGroup: MuscleGroup.arms,      secondaryMuscles: [],                   equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-024', name: 'Skull Crusher',         muscleGroup: MuscleGroup.arms,      secondaryMuscles: ['shoulders'],        equipment: Equipment.barbell,    createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-025', name: 'Tricep Dip',            muscleGroup: MuscleGroup.arms,      secondaryMuscles: ['chest','shoulders'],equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-021',
+    name: 'Barbell Curl',
+    muscleGroup: MuscleGroup.arms,
+    secondaryMuscles: ['shoulders'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-022',
+    name: 'Hammer Curl',
+    muscleGroup: MuscleGroup.arms,
+    secondaryMuscles: [],
+    equipment: Equipment.dumbbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-023',
+    name: 'Tricep Pushdown',
+    muscleGroup: MuscleGroup.arms,
+    secondaryMuscles: [],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-024',
+    name: 'Skull Crusher',
+    muscleGroup: MuscleGroup.arms,
+    secondaryMuscles: ['shoulders'],
+    equipment: Equipment.barbell,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-025',
+    name: 'Tricep Dip',
+    muscleGroup: MuscleGroup.arms,
+    secondaryMuscles: ['chest', 'shoulders'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 
   // ── Core ──
-  Exercise(id: 'ex-026', name: 'Plank',                 muscleGroup: MuscleGroup.core,      secondaryMuscles: ['shoulders'],        equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-027', name: 'Hanging Leg Raise',     muscleGroup: MuscleGroup.core,      secondaryMuscles: ['arms'],             equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-028', name: 'Cable Crunch',          muscleGroup: MuscleGroup.core,      secondaryMuscles: [],                   equipment: Equipment.cable,      createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-029', name: 'Ab Wheel Rollout',      muscleGroup: MuscleGroup.core,      secondaryMuscles: ['shoulders','back'], equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
-  Exercise(id: 'ex-030', name: 'Russian Twist',         muscleGroup: MuscleGroup.core,      secondaryMuscles: [],                   equipment: Equipment.bodyweight, createdAt: DateTime(2026, 1, 1)),
+  Exercise(
+    id: 'ex-026',
+    name: 'Plank',
+    muscleGroup: MuscleGroup.core,
+    secondaryMuscles: ['shoulders'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-027',
+    name: 'Hanging Leg Raise',
+    muscleGroup: MuscleGroup.core,
+    secondaryMuscles: ['arms'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-028',
+    name: 'Cable Crunch',
+    muscleGroup: MuscleGroup.core,
+    secondaryMuscles: [],
+    equipment: Equipment.cable,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-029',
+    name: 'Ab Wheel Rollout',
+    muscleGroup: MuscleGroup.core,
+    secondaryMuscles: ['shoulders', 'back'],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
+  Exercise(
+    id: 'ex-030',
+    name: 'Russian Twist',
+    muscleGroup: MuscleGroup.core,
+    secondaryMuscles: [],
+    equipment: Equipment.bodyweight,
+    createdAt: DateTime(2026, 1, 1),
+  ),
 ];
