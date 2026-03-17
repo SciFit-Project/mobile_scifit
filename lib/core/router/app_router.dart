@@ -14,7 +14,10 @@ import 'package:mobile_scifit/features/profile/presentation/screens/edit_profile
 import 'package:mobile_scifit/features/profile/presentation/screens/goal_setting_screen.dart';
 import 'package:mobile_scifit/features/profile/presentation/screens/profile_page.dart';
 import 'package:mobile_scifit/features/profile/presentation/screens/settings_screen.dart';
+import 'package:mobile_scifit/features/progress/presentation/screens/exercise_stats_screen.dart';
 import 'package:mobile_scifit/features/progress/presentation/screens/progress_page.dart';
+import 'package:mobile_scifit/features/progress/presentation/screens/session_detail_screen.dart';
+import 'package:mobile_scifit/features/progress/presentation/screens/workout_history_screen.dart';
 import 'package:mobile_scifit/features/shared/widgets/main_navbar.dart';
 import 'package:mobile_scifit/features/workout/presentation/screens/exercise_log_screen.dart';
 import 'package:mobile_scifit/features/workout/presentation/screens/workout_screen.dart';
@@ -97,6 +100,24 @@ class AppRouter {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/history',
+        builder: (context, state) => const WorkoutHistoryScreen(),
+        routes: [
+          GoRoute(
+            path: ':sessionId',
+            builder: (context, state) => SessionDetailScreen(
+              sessionId: state.pathParameters['sessionId']!,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/progress/exercise/:exerciseId',
+        builder: (context, state) => ExerciseStatsScreen(
+          exerciseId: state.pathParameters['exerciseId']!,
+        ),
       ),
 
       ShellRoute(
