@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:mobile_scifit/core/router/app_router.dart';
 import 'package:mobile_scifit/core/config/app_config.dart';
 import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
+import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DioClient {
   late Dio _dio;
@@ -28,8 +31,18 @@ class DioClient {
           return handler.next(options);
         },
         onError: (DioException e, handler) {
-          if (e.response?.statusCode == 401) {
-            // Logic for logout or refresh token
+          final statusCode = e.response?.statusCode;
+          final hasAuthHeader =
+              e.requestOptions.headers['Authorization'] != null;
+          final path = e.requestOptions.path;
+          final isAuthFormRequest =
+              path.contains('/api/auth/login') || path.contains('/api/auth/signup');
+
+          if (statusCode == 401 && hasAuthHeader && !isAuthFormRequest) {
+            SecureStorageService.deleteToken();
+            Supabase.instance.client.auth.signOut();
+            mockProfileStore.reset();
+            AppRouter.router.go('/login');
           }
           return handler.next(e);
         },

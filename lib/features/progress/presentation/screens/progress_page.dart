@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/home/data/home_service.dart';
+import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
 import 'package:mobile_scifit/features/progress/data/mock_progress_data.dart';
 
 class ProgressPage extends StatefulWidget {
@@ -126,18 +127,47 @@ class _ProgressPageState extends State<ProgressPage> {
                 const SizedBox(height: 16),
                 _ChartCard(
                   title: 'Body Weight Trend',
-                  subtitle: 'Last 30 days',
-                  trailing:
-                      '${mockBodyWeightTrend.last.weight.toStringAsFixed(1)} kg',
-                  child: SizedBox(
-                    height: 180,
-                    child: _SimpleLineChart(
-                      points: mockBodyWeightTrend
-                          .map((point) => point.weight)
-                          .toList(),
-                      lineColor: const Color(0xFF16A34A),
-                      fillColor: const Color(0xFF16A34A).withAlpha(20),
-                    ),
+                  subtitle: 'Current body weight',
+                  child: ValueListenableBuilder<MockUserProfile>(
+                    valueListenable: mockProfileStore,
+                    builder: (context, profile, _) {
+                      final hasWeight = profile.weightKg > 0;
+                      final weightPoints = List<double>.filled(
+                        14,
+                        profile.weightKg,
+                      );
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            hasWeight
+                                ? '${profile.weightKg.toStringAsFixed(1)} kg'
+                                : '--',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            hasWeight
+                                ? 'Synced from your latest profile data'
+                                : 'No body weight data yet',
+                            style: const TextStyle(color: Color(0xFF64748B)),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 180,
+                            child: _SimpleLineChart(
+                              points: weightPoints,
+                              lineColor: const Color(0xFF16A34A),
+                              fillColor: const Color(0xFF16A34A).withAlpha(20),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 16),

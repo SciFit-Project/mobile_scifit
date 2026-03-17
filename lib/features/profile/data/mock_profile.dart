@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum ProfileGender { male, female, other }
 
-enum ProfileGoalType { fatLoss, muscleGain, maintain }
+enum ProfileGoalType { fatLoss, maintain, muscleGain }
 
 enum ProfileActivityLevel { sedentary, lightlyActive, active, veryActive }
 
