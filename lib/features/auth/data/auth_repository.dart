@@ -148,7 +148,6 @@ class AuthRepository {
         (user['heightCm'] as num?)?.toDouble() ??
         defaultMockUserProfile().heightCm;
     final age = (user['age'] as num?)?.toInt() ?? defaultMockUserProfile().age;
-    final now = DateTime.now();
 
     mockProfileStore.update(
       defaultMockUserProfile().copyWith(
@@ -158,10 +157,10 @@ class AuthRepository {
         clearAvatarUrl: user['avatarUrl'] == null,
         weightKg: weightKg,
         heightCm: heightCm,
+        age: age,
         gender: _mapGender(user['gender'] as String?),
         goalType: _mapGoal(user['goal'] as String?),
         activityLevel: _mapActivityLevel(user['experienceLevel'] as String?),
-        dateOfBirth: DateTime(now.year - age, now.month, now.day),
       ),
     );
   }

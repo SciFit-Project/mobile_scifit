@@ -109,18 +109,17 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
   void _applyLocalProfile() {
     final profile = mockProfileStore.value;
     final age = _collectedData.age ?? profile.age;
-    final now = DateTime.now();
 
     mockProfileStore.patch(
       (current) => current.copyWith(
         weightKg: _collectedData.weight ?? current.weightKg,
         heightCm: _collectedData.height ?? current.heightCm,
+        age: age,
         gender: _mapGender(_collectedData.gender) ?? current.gender,
         goalType: _mapGoal(_collectedData.plan) ?? current.goalType,
         activityLevel:
             _mapActivityLevel(_collectedData.activityLevel) ??
             current.activityLevel,
-        dateOfBirth: DateTime(now.year - age, now.month, now.day),
         healthConnectGranted: _isPageValid[3],
       ),
     );

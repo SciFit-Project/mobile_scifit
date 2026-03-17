@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
+import 'package:mobile_scifit/features/profile/data/profile_repository.dart';
 
 class GoalSettingScreen extends StatefulWidget {
   const GoalSettingScreen({super.key});
@@ -12,7 +13,8 @@ class GoalSettingScreen extends StatefulWidget {
 class _GoalSettingScreenState extends State<GoalSettingScreen> {
   late ProfileGoalType _goalType;
   late ProfileActivityLevel _activityLevel;
-  late final TextEditingController _targetWeightController;
+  final ProfileRepository _profileRepository = ProfileRepository();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -20,38 +22,70 @@ class _GoalSettingScreenState extends State<GoalSettingScreen> {
     final profile = mockProfileStore.value;
     _goalType = profile.goalType;
     _activityLevel = profile.activityLevel;
-    _targetWeightController = TextEditingController(
-      text: profile.targetWeightKg.toStringAsFixed(1),
-    );
   }
 
-  @override
-  void dispose() {
-    _targetWeightController.dispose();
-    super.dispose();
-  }
+  Future<void> _saveGoal() async {
+    setState(() {
+      _isSaving = true;
+    });
 
-  void _saveGoal() {
-    final targetWeight = double.tryParse(_targetWeightController.text);
-    if (targetWeight == null) {
+    try {
+      final response = await _profileRepository.updateProfile({
+        'plan': _mapPlan(_goalType),
+        'activity_level': _mapActivityLevel(_activityLevel),
+      });
+
+      if (!mounted) return;
+
+      if (response != null && response.statusCode == 200) {
+        mockProfileStore.patch(
+          (current) => current.copyWith(
+            goalType: _goalType,
+            activityLevel: _activityLevel,
+          ),
+        );
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Goal updated')));
+        Navigator.of(context).pop();
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid target weight')),
+        const SnackBar(content: Text('Could not update goal')),
       );
-      return;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
+  }
 
-    mockProfileStore.patch(
-      (current) => current.copyWith(
-        goalType: _goalType,
-        targetWeightKg: targetWeight,
-        activityLevel: _activityLevel,
-      ),
-    );
+  String _mapPlan(ProfileGoalType goalType) {
+    switch (goalType) {
+      case ProfileGoalType.fatLoss:
+        return 'cutting';
+      case ProfileGoalType.muscleGain:
+        return 'bulking';
+      case ProfileGoalType.maintain:
+        return 'maintenance';
+    }
+  }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Mock goal updated')));
-    Navigator.of(context).pop();
+  String _mapActivityLevel(ProfileActivityLevel activityLevel) {
+    switch (activityLevel) {
+      case ProfileActivityLevel.sedentary:
+        return 'sedentary';
+      case ProfileActivityLevel.lightlyActive:
+        return 'light exercise';
+      case ProfileActivityLevel.active:
+        return 'moderate exercise';
+      case ProfileActivityLevel.veryActive:
+        return 'heavy exercise';
+    }
   }
 
   @override
@@ -124,25 +158,6 @@ class _GoalSettingScreenState extends State<GoalSettingScreen> {
                     ),
                   );
                 }).toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Target Weight',
-              child: TextField(
-                controller: _targetWeightController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Target weight (kg)',
-                  filled: true,
-                  fillColor: AppTheme.backgroundLight,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -227,8 +242,8 @@ class _GoalSettingScreenState extends State<GoalSettingScreen> {
         child: SizedBox(
           height: 54,
           child: ElevatedButton(
-            onPressed: _saveGoal,
-            child: const Text('Save Goal'),
+            onPressed: _isSaving ? null : _saveGoal,
+            child: Text(_isSaving ? 'Saving...' : 'Save Goal'),
           ),
         ),
       ),

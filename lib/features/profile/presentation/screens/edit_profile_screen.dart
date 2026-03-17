@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
+import 'package:mobile_scifit/features/profile/data/profile_repository.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -12,12 +12,14 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _nameController;
+  late final TextEditingController _ageController;
   late final TextEditingController _weightController;
   late final TextEditingController _heightController;
 
   late ProfileGender _gender;
-  late DateTime _dateOfBirth;
   late int _avatarColorValue;
+  final ProfileRepository _profileRepository = ProfileRepository();
+  bool _isSaving = false;
 
   static const _avatarColors = [
     Color(0xFF2F66F3),
@@ -32,6 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final profile = mockProfileStore.value;
     _nameController = TextEditingController(text: profile.name);
+    _ageController = TextEditingController(text: profile.age.toString());
     _weightController = TextEditingController(
       text: profile.weightKg.toStringAsFixed(1),
     );
@@ -39,31 +42,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       text: profile.heightCm.toStringAsFixed(0),
     );
     _gender = profile.gender;
-    _dateOfBirth = profile.dateOfBirth;
     _avatarColorValue = profile.avatarColorValue;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _ageController.dispose();
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickDateOfBirth() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dateOfBirth,
-      firstDate: DateTime(1940),
-      lastDate: DateTime.now().subtract(const Duration(days: 3650)),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _dateOfBirth = picked;
-      });
-    }
   }
 
   Future<void> _pickAvatarColor() async {
@@ -116,11 +104,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
+    final age = int.tryParse(_ageController.text);
     final weight = double.tryParse(_weightController.text);
     final height = double.tryParse(_heightController.text);
 
     if (_nameController.text.trim().isEmpty ||
+        age == null ||
         weight == null ||
         height == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,22 +119,50 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
-    mockProfileStore.patch(
-      (current) => current.copyWith(
-        name: _nameController.text.trim(),
-        weightKg: weight,
-        heightCm: height,
-        gender: _gender,
-        dateOfBirth: _dateOfBirth,
-        avatarColorValue: _avatarColorValue,
-        clearAvatarUrl: true,
-      ),
-    );
+    setState(() {
+      _isSaving = true;
+    });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Mock profile updated')));
-    Navigator.of(context).pop();
+    try {
+      final response = await _profileRepository.updateProfile({
+        'fullname': _nameController.text.trim(),
+        'age': age,
+        'weight': weight,
+        'height': height,
+        'gender': _gender == ProfileGender.female ? 'female' : 'male',
+      });
+
+      if (!mounted) return;
+
+      if (response != null && response.statusCode == 200) {
+        mockProfileStore.patch(
+          (current) => current.copyWith(
+            name: _nameController.text.trim(),
+            age: age,
+            weightKg: weight,
+            heightCm: height,
+            gender: _gender,
+            avatarColorValue: _avatarColorValue,
+          ),
+        );
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile updated')));
+        Navigator.of(context).pop();
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not update profile')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
@@ -200,6 +218,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
+                  _InputField(
+                    controller: _ageController,
+                    label: 'Age',
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -227,7 +251,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               title: 'Gender',
               child: SegmentedButton<ProfileGender>(
                 showSelectedIcon: false,
-                segments: ProfileGender.values
+                segments: const [ProfileGender.male, ProfileGender.female]
                     .map(
                       (gender) => ButtonSegment<ProfileGender>(
                         value: gender,
@@ -244,39 +268,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Date of Birth',
-              child: InkWell(
-                onTap: _pickDateOfBirth,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.backgroundLight,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cake_outlined),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          DateFormat('dd MMM yyyy').format(_dateOfBirth),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -285,8 +276,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: SizedBox(
           height: 54,
           child: ElevatedButton(
-            onPressed: _saveProfile,
-            child: const Text('Save Profile'),
+            onPressed: _isSaving ? null : _saveProfile,
+            child: Text(_isSaving ? 'Saving...' : 'Save Profile'),
           ),
         ),
       ),

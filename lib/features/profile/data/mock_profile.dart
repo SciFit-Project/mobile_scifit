@@ -13,10 +13,9 @@ class MockUserProfile {
   final int avatarColorValue;
   final double weightKg;
   final double heightCm;
-  final DateTime dateOfBirth;
+  final int age;
   final ProfileGender gender;
   final ProfileGoalType goalType;
-  final double targetWeightKg;
   final ProfileActivityLevel activityLevel;
   final DateTime memberSince;
   final int totalWorkouts;
@@ -32,10 +31,9 @@ class MockUserProfile {
     required this.avatarColorValue,
     required this.weightKg,
     required this.heightCm,
-    required this.dateOfBirth,
+    required this.age,
     required this.gender,
     required this.goalType,
-    required this.targetWeightKg,
     required this.activityLevel,
     required this.memberSince,
     required this.totalWorkouts,
@@ -55,10 +53,9 @@ class MockUserProfile {
       avatarColorValue: const Color(0xFF2F66F3).toARGB32(),
       weightKg: 0,
       heightCm: 0,
-      dateOfBirth: DateTime(now.year - 25, now.month, now.day),
+      age: 25,
       gender: ProfileGender.other,
       goalType: ProfileGoalType.maintain,
-      targetWeightKg: 0,
       activityLevel: ProfileActivityLevel.sedentary,
       memberSince: now,
       totalWorkouts: 0,
@@ -77,10 +74,9 @@ class MockUserProfile {
     int? avatarColorValue,
     double? weightKg,
     double? heightCm,
-    DateTime? dateOfBirth,
+    int? age,
     ProfileGender? gender,
     ProfileGoalType? goalType,
-    double? targetWeightKg,
     ProfileActivityLevel? activityLevel,
     DateTime? memberSince,
     int? totalWorkouts,
@@ -96,10 +92,9 @@ class MockUserProfile {
       avatarColorValue: avatarColorValue ?? this.avatarColorValue,
       weightKg: weightKg ?? this.weightKg,
       heightCm: heightCm ?? this.heightCm,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      age: age ?? this.age,
       gender: gender ?? this.gender,
       goalType: goalType ?? this.goalType,
-      targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       activityLevel: activityLevel ?? this.activityLevel,
       memberSince: memberSince ?? this.memberSince,
       totalWorkouts: totalWorkouts ?? this.totalWorkouts,
@@ -108,18 +103,6 @@ class MockUserProfile {
       streakDays: streakDays ?? this.streakDays,
       healthConnectGranted: healthConnectGranted ?? this.healthConnectGranted,
     );
-  }
-
-  int get age {
-    final now = DateTime.now();
-    var years = now.year - dateOfBirth.year;
-    final birthdayThisYear = DateTime(
-      now.year,
-      dateOfBirth.month,
-      dateOfBirth.day,
-    );
-    if (now.isBefore(birthdayThisYear)) years--;
-    return years;
   }
 
   String get initials {
