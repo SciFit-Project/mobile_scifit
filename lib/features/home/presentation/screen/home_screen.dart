@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isLoading = true);
     final dataStep = await _healthService.getTodaySteps();
     final sleepData = await _healthService.getWeeklySleep();
-    final heartRate = await _healthService.getLatestHeartRate();
+    final heartRate = await _healthService.getAverageHeartRate();
 
     setState(() {
       _mobileSteps = dataStep['mobile'] ?? 0;

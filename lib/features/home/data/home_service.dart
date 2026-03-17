@@ -110,9 +110,9 @@ class HomeService {
     }
   }
 
-  Future<int> getLatestHeartRate() async {
+  Future<int> getAverageHeartRate() async {
     final now = DateTime.now();
-    final start = now.subtract(const Duration(hours: 12));
+    final start = DateTime(now.year, now.month, now.day);
 
     try {
       List<HealthDataPoint> data = await health.getHealthDataFromTypes(
@@ -123,14 +123,19 @@ class HomeService {
 
       if (data.isEmpty) return 0;
 
-      // เรียงตามเวลาวัดจริง
-      data.sort((a, b) => b.dateFrom.compareTo(a.dateFrom));
+      final heartRates = data
+          .map((point) => (point.value as NumericHealthValue).numericValue)
+          .whereType<num>()
+          .map((value) => value.toDouble())
+          .toList();
 
-      final latest = data.first;
+      if (heartRates.isEmpty) return 0;
 
-      final bpm = (latest.value as NumericHealthValue).numericValue.toInt();
+      final average =
+          heartRates.reduce((total, value) => total + value) /
+          heartRates.length;
 
-      return bpm;
+      return average.round();
     } catch (e) {
       debugPrint("Error reading heart rate: $e");
       return 0;
