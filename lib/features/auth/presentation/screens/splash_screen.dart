@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
+import 'package:mobile_scifit/features/auth/data/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,6 +14,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  final AuthRepository _authRepository = AuthRepository();
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
@@ -35,8 +38,44 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+
+    final customToken = await SecureStorageService.getToken();
+    if (!mounted) return;
+    if (customToken != null && customToken.isNotEmpty) {
+      try {
+        final destination = await _authRepository.restoreSession();
+        if (!mounted) return;
+        context.go(
+          destination == PostAuthDestination.onboarding
+              ? '/onboarding'
+              : '/home',
+        );
+      } catch (_) {
+        await _authRepository.signOut();
+        if (!mounted) return;
+        context.go('/login');
+      }
+      return;
+    }
+
     final session = Supabase.instance.client.auth.currentSession;
-    context.go(session != null ? '/home' : '/login');
+    if (session != null) {
+      try {
+        final destination = await _authRepository.syncGoogleSession();
+        if (!mounted) return;
+        context.go(
+          destination == PostAuthDestination.onboarding
+              ? '/onboarding'
+              : '/home',
+        );
+        return;
+      } catch (_) {
+        await _authRepository.signOut();
+      }
+    }
+
+    if (!mounted) return;
+    context.go('/login');
   }
 
   @override

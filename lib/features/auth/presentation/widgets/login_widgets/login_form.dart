@@ -44,15 +44,13 @@ class _LoginFormState extends State<LoginForm> {
     }
 
     try {
-      final response = await _authRepo.signInWithEmail(email, password);
+      final destination = await _authRepo.signInWithEmail(email, password);
 
       if (!mounted) return;
 
-      if (response != null && response.statusCode == 200) {
-        context.go('/home');
-      } else {
-        _showError('Invalid email or password');
-      }
+      context.go(
+        destination == PostAuthDestination.onboarding ? '/onboarding' : '/home',
+      );
     } catch (e) {
       if (!mounted) return;
       _showError('Login failed: ${e.toString()}');

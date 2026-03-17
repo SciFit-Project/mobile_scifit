@@ -11,8 +11,8 @@ class OnboardingData {
     'age': age,
     'height': height,
     'weight': weight,
-    'gender': gender,
-    'plan': plan,
-    'activity_level': activityLevel,
+    'gender': gender?.toLowerCase(),
+    'plan': plan?.toLowerCase(),
+    'activity_level': activityLevel?.toLowerCase(),
   };
 }

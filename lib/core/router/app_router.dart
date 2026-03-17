@@ -38,7 +38,9 @@ class AppRouter {
     redirect: (context, state) async {
       final session = _supabase.auth.currentSession;
       final customToken = await SecureStorageService.getToken();
-      final isLoggedIn = (session != null) || (customToken != null);
+      final hasCustomToken = customToken != null && customToken.isNotEmpty;
+      final hasSupabaseSession = session != null;
+      final isLoggedIn = hasCustomToken;
 
       final loc = state.matchedLocation;
 
@@ -46,6 +48,10 @@ class AppRouter {
       final isPublicPage = publicPages.contains(loc);
 
       if (loc == '/splash') return null;
+
+      if (hasSupabaseSession && !hasCustomToken) {
+        return '/splash';
+      }
 
       if (!isLoggedIn && !isPublicPage) return '/login';
 

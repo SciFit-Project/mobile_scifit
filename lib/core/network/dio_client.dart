@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mobile_scifit/core/config/app_config.dart';
 import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
 
 class DioClient {
@@ -8,7 +8,7 @@ class DioClient {
   DioClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: dotenv.env['BACKEND_URL'] ?? '',
+        baseUrl: AppConfig.backendUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {

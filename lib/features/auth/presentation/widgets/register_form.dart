@@ -72,12 +72,16 @@ class _RegisterFormState extends State<RegisterForm> {
 
       if (response != null && response.statusCode == 201) {
         try {
-          await _authRepo.signInWithEmail(email, password);
+          final destination = await _authRepo.signInWithEmail(email, password);
 
           await Future.delayed(const Duration(milliseconds: 500));
 
           if (!mounted) return;
-          context.go('/onboarding');
+          context.go(
+            destination == PostAuthDestination.onboarding
+                ? '/onboarding'
+                : '/home',
+          );
         } catch (loginError) {
           if (!mounted) return;
           context.go('/login');

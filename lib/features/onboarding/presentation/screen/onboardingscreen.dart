@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/onboarding/data/onboard_data_model.dart';
+import 'package:mobile_scifit/features/onboarding/data/onboarding_repository.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/onboard_header.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/activity.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/widgets/steps/goal.dart';
@@ -20,8 +21,10 @@ class Onboardingscreen extends StatefulWidget {
 class _OnboardingscreenState extends State<Onboardingscreen> {
   final PageController _pageController = PageController();
   final OnboardingData _collectedData = OnboardingData();
+  final OnboardingRepository _onboardingRepository = OnboardingRepository();
 
   int _currentPage = 0;
+  bool _isSubmitting = false;
   final List<bool> _isPageValid = [false, false, false, false];
   late List<Widget> _steps;
 
@@ -66,7 +69,44 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
     ];
   }
 
-  void _submitData() {
+  Future<void> _submitData() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final response = await _onboardingRepository.submitProfile(
+        _collectedData,
+      );
+
+      if (!mounted) return;
+
+      if (response != null && response.statusCode == 200) {
+        _applyLocalProfile();
+        context.go('/home');
+        return;
+      }
+
+      _showError('Could not save your profile. Please try again.');
+    } catch (e) {
+      if (!mounted) return;
+      _showError('Could not save your profile. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void _applyLocalProfile() {
     final profile = mockProfileStore.value;
     final age = _collectedData.age ?? profile.age;
     final now = DateTime.now();
@@ -84,8 +124,6 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
         healthConnectGranted: _isPageValid[3],
       ),
     );
-
-    context.go('/home');
   }
 
   ProfileGender? _mapGender(String? gender) {
@@ -201,6 +239,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                     flex: 4,
                     child: ElevatedButton(
                       onPressed: _isPageValid[_currentPage]
+                          && !_isSubmitting
                           ? () {
                               if (_currentPage < _steps.length - 1) {
                                 _pageController.nextPage(
@@ -213,7 +252,9 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                             }
                           : null,
                       child: Text(
-                        _currentPage == _steps.length - 1
+                        _isSubmitting
+                            ? "Saving..."
+                            : _currentPage == _steps.length - 1
                             ? "Get Started"
                             : "Next",
                       ),

@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/auth/data/auth_repository.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    await Supabase.instance.client.auth.signOut();
-    await SecureStorageService.deleteToken();
+    await AuthRepository().signOut();
     if (context.mounted) {
       context.go('/login');
     }

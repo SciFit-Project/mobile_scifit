@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum ProfileGender { male, female, other }
 
@@ -47,33 +46,26 @@ class MockUserProfile {
   });
 
   factory MockUserProfile.seed() {
-    final user = Supabase.instance.client.auth.currentUser;
-    final metadata = user?.userMetadata ?? const {};
-    final fullName = metadata['full_name'] as String?;
-    final email =
-        user?.email ?? metadata['email'] as String? ?? 'alex@example.com';
-    final avatarUrl = metadata['avatar_url'] as String?;
+    final now = DateTime.now();
 
     return MockUserProfile(
-      name: fullName?.trim().isNotEmpty == true
-          ? fullName!.trim()
-          : 'Alex Kananta',
-      email: email,
-      avatarUrl: avatarUrl,
+      name: '',
+      email: '',
+      avatarUrl: null,
       avatarColorValue: const Color(0xFF2F66F3).toARGB32(),
-      weightKg: 72.3,
-      heightCm: 175,
-      dateOfBirth: DateTime(2000, 4, 14),
-      gender: ProfileGender.male,
-      goalType: ProfileGoalType.fatLoss,
-      targetWeightKg: 68,
-      activityLevel: ProfileActivityLevel.active,
-      memberSince: DateTime(2024, 9, 1),
-      totalWorkouts: 48,
-      totalVolumeKg: 186000,
-      totalHours: 38.2,
-      streakDays: 14,
-      healthConnectGranted: true,
+      weightKg: 0,
+      heightCm: 0,
+      dateOfBirth: DateTime(now.year - 25, now.month, now.day),
+      gender: ProfileGender.other,
+      goalType: ProfileGoalType.maintain,
+      targetWeightKg: 0,
+      activityLevel: ProfileActivityLevel.sedentary,
+      memberSince: now,
+      totalWorkouts: 0,
+      totalVolumeKg: 0,
+      totalHours: 0,
+      streakDays: 0,
+      healthConnectGranted: false,
     );
   }
 
@@ -154,7 +146,18 @@ class MockUserProfile {
     }
   }
 
-  double get tdee => bmr * activityLevel.multiplier;
+  double get maintenanceCalories => bmr * activityLevel.multiplier;
+
+  double get tdee {
+    switch (goalType) {
+      case ProfileGoalType.fatLoss:
+        return maintenanceCalories - 500;
+      case ProfileGoalType.muscleGain:
+        return maintenanceCalories + 500;
+      case ProfileGoalType.maintain:
+        return maintenanceCalories;
+    }
+  }
 }
 
 extension ProfileGenderX on ProfileGender {
@@ -241,3 +244,5 @@ class MockProfileStore extends ValueNotifier<MockUserProfile> {
 }
 
 final mockProfileStore = MockProfileStore();
+
+MockUserProfile defaultMockUserProfile() => MockUserProfile.seed();

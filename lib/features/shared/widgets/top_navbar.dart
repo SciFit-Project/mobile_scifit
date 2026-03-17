@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_scifit/core/storage/secure_storage_service.dart';
+import 'package:mobile_scifit/features/auth/data/auth_repository.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TopNavbar extends StatelessWidget {
   const TopNavbar({super.key});
@@ -18,8 +17,7 @@ class TopNavbar extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () async {
-                await Supabase.instance.client.auth.signOut();
-                await SecureStorageService.deleteToken();
+                await AuthRepository().signOut();
               },
               child: CircleAvatar(
                 radius: 22,
