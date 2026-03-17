@@ -5,7 +5,11 @@ import 'package:mobile_scifit/features/auth/presentation/screens/register_screen
 import 'package:mobile_scifit/features/home/presentation/screen/home_screen.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/steps/steps_history_screen.dart';
 import 'package:mobile_scifit/features/onboarding/presentation/screen/onboardingscreen.dart';
-import 'package:mobile_scifit/features/plans/presentation/screens/my_plans.dart';
+import 'package:mobile_scifit/features/plans/presentation/screens/add_exercises_screen.dart';
+import 'package:mobile_scifit/features/plans/presentation/screens/create_plan_screen.dart';
+import 'package:mobile_scifit/features/plans/presentation/screens/day_builder_screen.dart';
+import 'package:mobile_scifit/features/plans/presentation/screens/plans_screen.dart';
+import 'package:mobile_scifit/features/plans/presentation/screens/plan_details_screen.dart';
 import 'package:mobile_scifit/features/profile/presentation/screens/profile_page.dart';
 import 'package:mobile_scifit/features/progress/presentation/screens/progress_page.dart';
 import 'package:mobile_scifit/features/shared/widgets/main_navbar.dart';
@@ -21,6 +25,7 @@ class AppRouter {
   static final _supabase = Supabase.instance.client;
 
   static final router = GoRouter(
+    debugLogDiagnostics: true,
     initialLocation: '/splash',
     refreshListenable: GoRouterRefreshStream(_supabase.auth.onAuthStateChange),
 
@@ -57,7 +62,27 @@ class AppRouter {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-
+      GoRoute(
+        path: '/plans/new',
+        builder: (context, state) => const CreatePlan(),
+      ),
+      GoRoute(
+        path: '/plans/:id/days/:dayId/edit',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final dayId = state.pathParameters['dayId']!;
+          return DayBuilderScreen(id: id, dayId: dayId);
+        },
+        routes: [
+          GoRoute(
+            path: 'exercises/browse',
+            builder: (context, state) => AddExercisesScreen(
+              planId: state.pathParameters['id']!,
+              dayId: state.pathParameters['dayId']!,
+            ),
+          ),
+        ],
+      ),
       ShellRoute(
         builder: (context, state, child) {
           return Scaffold(body: child, bottomNavigationBar: const MainNavbar());
@@ -73,8 +98,17 @@ class AppRouter {
           ),
 
           GoRoute(
-            path: '/my-plans',
-            builder: (context, state) => const MyPlans(),
+            path: '/plans',
+            builder: (context, state) => const MyPlansScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return PlanDetailsScreen(id: id);
+                },
+              ),
+            ],
           ),
 
           GoRoute(

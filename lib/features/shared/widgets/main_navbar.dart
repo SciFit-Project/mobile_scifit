@@ -9,7 +9,7 @@ class MainNavbar extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
 
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/my-plans')) return 1;
+    if (location.startsWith('/plans')) return 1;
     if (location.startsWith('/progress')) return 2;
     if (location.startsWith('/profile')) return 3;
 
@@ -22,7 +22,7 @@ class MainNavbar extends StatelessWidget {
         context.go('/home');
         break;
       case 1:
-        context.go('/my-plans');
+        context.go('/plans');
         break;
       case 2:
         context.go('/progress');
