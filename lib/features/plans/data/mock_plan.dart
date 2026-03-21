@@ -445,6 +445,48 @@ final List<MyPlans> myMockPlans = [
   ),
 ];
 
+List<MyPlans> buildMockPlans() {
+  return myMockPlans.map(_clonePlan).toList();
+}
+
+MyPlans _clonePlan(MyPlans plan) {
+  return MyPlans(
+    id: plan.id,
+    userId: plan.userId,
+    name: plan.name,
+    description: plan.description,
+    isActive: plan.isActive,
+    createdAt: plan.createdAt,
+    days: plan.days.map(_cloneDay).toList(),
+    stats: PlanStats(
+      totalDays: plan.stats.totalDays,
+      totalExercises: plan.stats.totalExercises,
+      estDurationMin: plan.stats.estDurationMin,
+      timesUsed: plan.stats.timesUsed,
+    ),
+  );
+}
+
+WorkoutDay _cloneDay(WorkoutDay day) {
+  return WorkoutDay(
+    id: day.id,
+    dayNumber: day.dayNumber,
+    name: day.name,
+    exercises: day.exercises.map(_cloneExercise).toList(),
+  );
+}
+
+PlanExercise _cloneExercise(PlanExercise exercise) {
+  return PlanExercise(
+    exerciseId: exercise.exerciseId,
+    name: exercise.name,
+    muscleGroup: exercise.muscleGroup,
+    sets: exercise.sets,
+    reps: exercise.reps,
+    order: exercise.order,
+  );
+}
+
 MyPlans? getActiveMockPlan() {
   for (final plan in myMockPlans) {
     if (plan.isActive) return plan;

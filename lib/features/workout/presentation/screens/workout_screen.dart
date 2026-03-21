@@ -3,7 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plan_store.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/exercise_row.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/finish_workout_button.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/workout_progress.dart';
@@ -26,7 +26,7 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
   @override
   void initState() {
     super.initState();
-    final day = getWorkoutDayById(widget.dayId);
+    final day = findWorkoutDayById(widget.dayId);
     _workoutTitle = day?.name ?? 'Workout';
     _exercises =
         day?.exercises

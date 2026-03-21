@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plan_store.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class PlanDetailsScreen extends StatefulWidget {
@@ -16,38 +16,52 @@ class PlanDetailsScreen extends StatefulWidget {
 class _PlanDetailsScreenState extends State<PlanDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    final editPlan = myMockPlans.where((p) => p.id == widget.id).first;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
-          editPlan.name,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        title: ValueListenableBuilder<List<MyPlans>>(
+          valueListenable: planStore,
+          builder: (context, plans, _) {
+            final editPlan = plans.where((p) => p.id == widget.id).firstOrNull;
+            return Text(
+              editPlan?.name ?? 'Plan Details',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            );
+          },
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _planDetailsCard(editPlan),
-              const SizedBox(height: 20),
-              const Text(
-                "Workout Days",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      body: ValueListenableBuilder<List<MyPlans>>(
+        valueListenable: planStore,
+        builder: (context, plans, _) {
+          final editPlan = plans.where((p) => p.id == widget.id).firstOrNull;
+          if (editPlan == null) {
+            return const Center(child: Text('Plan not found'));
+          }
+
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _planDetailsCard(editPlan),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Workout Days",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  ...editPlan.days.map(
+                    (day) => Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
+                      child: (_workoutDays(day, widget.id)),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ...editPlan.days.map(
-                (day) => Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-                  child: (_workoutDays(day, widget.id)),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -136,16 +150,17 @@ class _PlanDetailsScreenState extends State<PlanDetailsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Badge(
-                    label: const Text(
-                      "ACTIVE",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF16A34A),
+                  if (plans.isActive)
+                    Badge(
+                      label: const Text(
+                        "ACTIVE",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF16A34A),
+                        ),
                       ),
+                      backgroundColor: const Color(0xFF16A34A).withAlpha(80),
                     ),
-                    backgroundColor: const Color(0xFF16A34A).withAlpha(80),
-                  ),
                 ],
               ),
               Text(

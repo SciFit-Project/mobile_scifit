@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/presentation/widgets/create/add_day.dart';
 import 'package:mobile_scifit/features/plans/presentation/widgets/create/plan_details.dart';
 import 'package:mobile_scifit/features/plans/presentation/widgets/create/workout_day_card.dart';
@@ -13,27 +15,66 @@ class CreatePlan extends StatefulWidget {
 }
 
 class _CreatePlanState extends State<CreatePlan> {
+  final PlansRepository _plansRepository = PlansRepository();
   final _planName = TextEditingController();
   final _planDescription = TextEditingController();
+  bool _isSubmitting = false;
 
-  void submit() {
-    final name = _planName.text;
-    final description = _planDescription.text;
-    debugPrint("Name: $name");
-    debugPrint("Description: $description");
+  Future<void> submit() async {
+    final name = _planName.text.trim();
+    final description = _planDescription.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a plan name')),
+      );
+      return;
+    }
 
-    _dayWorkout.clear();
+    if (_dayWorkout.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add at least one workout day')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final createdPlan = await _plansRepository.createPlan(
+        name: name,
+        description: description,
+        days: _dayWorkout.asMap().entries.map((entry) {
+          return WorkoutDay(
+            id: 'day-${DateTime.now().microsecondsSinceEpoch}-${entry.key}',
+            dayNumber: entry.key + 1,
+            name: entry.value.workoutTitle,
+            exercises: const [],
+          );
+        }).toList(),
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${createdPlan.name} created')),
+      );
+      context.go('/plans/${createdPlan.id}');
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   final List<WorkoutPlan> _dayWorkout = [];
+
   void addDay() {
-    debugPrint("Added");
     setState(() {
       _dayWorkout.add(
-        WorkoutPlan(workoutTitle: "Untitled Plan", totalExercise: 0),
+        WorkoutPlan(
+          workoutTitle: "Workout Day ${_dayWorkout.length + 1}",
+          totalExercise: 0,
+        ),
       );
     });
-    debugPrint(_dayWorkout.toString());
   }
 
   @override
@@ -79,6 +120,7 @@ class _CreatePlanState extends State<CreatePlan> {
                           idx: index,
                           workoutTitle: w.workoutTitle,
                           totalExercise: w.totalExercise,
+                          onEdit: null,
                         ),
                       );
                     }),
@@ -98,7 +140,10 @@ class _CreatePlanState extends State<CreatePlan> {
         child: SizedBox(
           width: double.infinity,
           height: 50,
-          child: ElevatedButton(onPressed: submit, child: const Text("Submit")),
+          child: ElevatedButton(
+            onPressed: _isSubmitting ? null : submit,
+            child: Text(_isSubmitting ? "Saving..." : "Submit"),
+          ),
         ),
       ),
     );

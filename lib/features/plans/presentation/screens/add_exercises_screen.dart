@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class AddExercisesScreen extends StatefulWidget {
@@ -18,6 +18,7 @@ class AddExercisesScreen extends StatefulWidget {
 }
 
 class _AddExercisesScreenState extends State<AddExercisesScreen> {
+  final PlansRepository _plansRepository = PlansRepository();
   final TextEditingController _searchCtrl = TextEditingController();
 
   String _search = '';
@@ -30,7 +31,7 @@ class _AddExercisesScreenState extends State<AddExercisesScreen> {
   }
 
   List<Exercise> get _filteredExercises {
-    return mockExercises.where((exercise) {
+    return _plansRepository.getExercises().where((exercise) {
       final matchName = exercise.name.toLowerCase().contains(
         _search.toLowerCase(),
       );

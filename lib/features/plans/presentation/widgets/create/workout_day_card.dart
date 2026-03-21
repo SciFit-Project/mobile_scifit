@@ -5,17 +5,15 @@ class WorkoutDayCard extends StatelessWidget {
   final int idx;
   final String workoutTitle;
   final int totalExercise;
+  final VoidCallback? onEdit;
 
   const WorkoutDayCard({
     super.key,
     required this.idx,
     required this.workoutTitle,
     required this.totalExercise,
+    this.onEdit,
   });
-
-  void editWorkout() {
-    debugPrint("Edit workout ID: $idx ");
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +59,10 @@ class WorkoutDayCard extends StatelessWidget {
               ),
             ],
           ),
-          IconButton(onPressed: editWorkout, icon: const Icon(Icons.edit_outlined)),
+          IconButton(
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined),
+          ),
         ],
       ),
     );

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plan_store.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class DayBuilderScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class DayBuilderScreen extends StatefulWidget {
 }
 
 class _DayBuilderScreenState extends State<DayBuilderScreen> {
+  final PlansRepository _plansRepository = PlansRepository();
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocusNode = FocusNode();
 
@@ -36,7 +38,7 @@ class _DayBuilderScreenState extends State<DayBuilderScreen> {
     super.dispose();
   }
 
-  MyPlans get _plan => myMockPlans.firstWhere((p) => p.id == widget.id);
+  MyPlans get _plan => findPlanById(widget.id)!;
 
   WorkoutDay get _sourceDay =>
       _plan.days.firstWhere((d) => d.id == widget.dayId);
@@ -195,8 +197,6 @@ class _DayBuilderScreenState extends State<DayBuilderScreen> {
       return;
     }
 
-    final dayIndex = _plan.days.indexWhere((day) => day.id == widget.dayId);
-    final sourceDay = _sourceDay;
     final updatedExercises = _draftExercises.asMap().entries.map((entry) {
       final exercise = entry.value;
       return PlanExercise(
@@ -209,18 +209,20 @@ class _DayBuilderScreenState extends State<DayBuilderScreen> {
       );
     }).toList();
 
-    _plan.days[dayIndex] = WorkoutDay(
-      id: sourceDay.id,
-      dayNumber: sourceDay.dayNumber,
-      name: dayName,
-      exercises: updatedExercises,
-    );
-
-    setState(_loadDraftFromSource);
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Day saved successfully')));
+    _plansRepository
+        .saveDay(
+          planId: widget.id,
+          dayId: widget.dayId,
+          dayName: dayName,
+          exercises: updatedExercises,
+        )
+        .then((_) {
+          if (!mounted) return;
+          setState(_loadDraftFromSource);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Day saved successfully')),
+          );
+        });
   }
 
   @override

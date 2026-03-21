@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class ActiveCard extends StatelessWidget {
   final MyPlans plans;
   const ActiveCard({super.key, required this.plans});
 
-  void test() {
-    debugPrint(plans.id);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final plansRepository = PlansRepository();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,8 +139,9 @@ class ActiveCard extends StatelessWidget {
                     child: SizedBox(
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () {
-                          setActiveMockPlan(null);
+                        onPressed: () async {
+                          await plansRepository.activatePlan(null);
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('${plans.name} deactivated'),

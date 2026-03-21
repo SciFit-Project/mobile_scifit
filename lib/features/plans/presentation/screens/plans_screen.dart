@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plan_store.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/presentation/widgets/myplan/active_card.dart';
+import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 
 class MyPlansScreen extends StatefulWidget {
   const MyPlansScreen({super.key});
@@ -12,44 +14,51 @@ class MyPlansScreen extends StatefulWidget {
 }
 
 class _MyPlansScreenState extends State<MyPlansScreen> {
+  final PlansRepository _plansRepository = PlansRepository();
+
   @override
   Widget build(BuildContext context) {
-    final activePlan = myMockPlans.where((p) => p.isActive).firstOrNull;
-    final otherPlans = myMockPlans.where((p) => !p.isActive).toList();
-
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _planHeader(),
+        child: ValueListenableBuilder<List<MyPlans>>(
+          valueListenable: planStore,
+          builder: (context, plans, _) {
+            final activePlan = plans.where((p) => p.isActive).firstOrNull;
+            final otherPlans = plans.where((p) => !p.isActive).toList();
 
-                const SizedBox(height: 16),
-                if (activePlan != null)
-                  ActiveCard(plans: activePlan)
-                else
-                  const Text('No active plan'),
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _planHeader(),
 
-                const SizedBox(height: 16),
-                const Text('My Other Plans'),
+                    const SizedBox(height: 16),
+                    if (activePlan != null)
+                      ActiveCard(plans: activePlan)
+                    else
+                      const Text('No active plan'),
 
-                const SizedBox(height: 16),
-                ...otherPlans.map(
-                  (plan) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _otherPlan(
-                      plan.id,
-                      plan.name,
-                      '${plan.stats.totalDays} days · ${plan.stats.estDurationMin} min/session',
+                    const SizedBox(height: 16),
+                    const Text('My Other Plans'),
+
+                    const SizedBox(height: 16),
+                    ...otherPlans.map(
+                      (plan) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _otherPlan(
+                          plan.id,
+                          plan.name,
+                          '${plan.stats.totalDays} days · ${plan.stats.estDurationMin} min/session',
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -118,10 +127,9 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
-                onPressed: () {
-                  setState(() {
-                    setActiveMockPlan(planId);
-                  });
+                onPressed: () async {
+                  await _plansRepository.activatePlan(planId);
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('$planTitle activated')),
                   );

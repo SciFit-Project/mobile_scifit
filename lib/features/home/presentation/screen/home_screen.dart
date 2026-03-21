@@ -7,7 +7,8 @@ import 'package:mobile_scifit/features/home/presentation/widgets/sleep_dashboard
 import 'package:mobile_scifit/features/home/presentation/widgets/stat_info.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/steps/step_card.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/workout_card.dart';
-import 'package:mobile_scifit/features/plans/data/mock_plan.dart';
+import 'package:mobile_scifit/features/plans/data/plan_store.dart';
+import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
 
@@ -55,11 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activePlan = getActiveMockPlan();
-    final activeDay = activePlan?.days.isNotEmpty == true
-        ? activePlan!.days.first
-        : null;
-
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -114,18 +110,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                WorkoutCard(
-                  workoutTitle: activePlan == null || activeDay == null
-                      ? 'No active workout plan'
-                      : '${activePlan.name} - ${activeDay.name}',
-                  totalExercise: activeDay?.exercises.length ?? 0,
-                  timeDuration: activePlan?.stats.estDurationMin ?? 0,
-                  onStartWorkout: () {
-                    if (activeDay == null) {
-                      context.push('/plans');
-                      return;
-                    }
-                    context.push('/workout-plan/${activeDay.id}');
+                ValueListenableBuilder<List<MyPlans>>(
+                  valueListenable: planStore,
+                  builder: (context, plans, _) {
+                    final activePlan = plans.where((p) => p.isActive).firstOrNull;
+                    final activeDay = activePlan?.days.isNotEmpty == true
+                        ? activePlan!.days.first
+                        : null;
+
+                    return WorkoutCard(
+                      workoutTitle: activePlan == null || activeDay == null
+                          ? 'No active workout plan'
+                          : '${activePlan.name} - ${activeDay.name}',
+                      totalExercise: activeDay?.exercises.length ?? 0,
+                      timeDuration: activePlan?.stats.estDurationMin ?? 0,
+                      onStartWorkout: () {
+                        if (activeDay == null) {
+                          context.push('/plans');
+                          return;
+                        }
+                        context.push('/workout-plan/${activeDay.id}');
+                      },
+                    );
                   },
                 ),
 
