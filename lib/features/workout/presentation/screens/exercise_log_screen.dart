@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
+import 'package:mobile_scifit/features/progress/data/mock_progress_data.dart';
+import 'package:mobile_scifit/features/sessions/data/session_repository.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/exercise_widgets/add_set_button.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/exercise_widgets/complete_exercise_button.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/exercise_widgets/rpe_slider.dart';
@@ -13,11 +15,13 @@ import '../widgets/exercise_widgets/previous_set.dart';
 class ExerciseLogScreen extends StatefulWidget {
   final String exerciseId;
   final String sessionId;
+  final String exerciseName;
 
   const ExerciseLogScreen({
     super.key,
     required this.exerciseId,
     required this.sessionId,
+    required this.exerciseName,
   });
 
   @override
@@ -25,19 +29,12 @@ class ExerciseLogScreen extends StatefulWidget {
 }
 
 class _ExerciseLogScreenState extends State<ExerciseLogScreen> {
+  final SessionRepository _sessionRepository = SessionRepository();
   final List<WorkoutSet> _sets = [];
   double _rpe = 7;
 
-  final List<LastSessionHistory> previousSet = [
-    LastSessionHistory(
-      lastDate: "Dec 10",
-      sessionHistory: [
-        ListSessionHistory(set: 1, weight: 60, reps: 12),
-        ListSessionHistory(set: 2, weight: 60, reps: 12),
-        ListSessionHistory(set: 3, weight: 62.5, reps: 12),
-      ],
-    ),
-  ];
+  LastSessionHistory? get previousSet =>
+      _sessionRepository.getPreviousExerciseHistory(widget.exerciseId);
 
   void _addSet() {
     setState(() {
@@ -57,8 +54,27 @@ class _ExerciseLogScreenState extends State<ExerciseLogScreen> {
     return _sets.isNotEmpty && _sets.any((s) => s.done);
   }
 
-  void _completeExercise() {
-    context.pop();
+  Future<void> _completeExercise() async {
+    final completedSets = _sets
+        .where((set) => set.done)
+        .map(
+          (set) => LoggedSet(
+            reps: set.reps,
+            weight: set.weight,
+            rpe: _rpe,
+          ),
+        )
+        .toList();
+
+    await _sessionRepository.logExerciseSets(
+      sessionId: widget.sessionId,
+      exerciseId: widget.exerciseId,
+      exerciseName: widget.exerciseName,
+      sets: completedSets,
+    );
+
+    if (!mounted) return;
+    context.pop(true);
   }
 
   @override
@@ -69,7 +85,7 @@ class _ExerciseLogScreenState extends State<ExerciseLogScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        title: const Text('Bench Press'),
+        title: Text(widget.exerciseName),
       ),
 
       body: Column(
@@ -78,7 +94,9 @@ class _ExerciseLogScreenState extends State<ExerciseLogScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                PreviousSet(previousSet: previousSet),
+                PreviousSet(
+                  previousSet: previousSet == null ? const [] : [previousSet!],
+                ),
 
                 const SizedBox(height: 16),
 
@@ -138,7 +156,7 @@ class _ExerciseLogScreenState extends State<ExerciseLogScreen> {
             padding: const EdgeInsets.all(24),
             child: CompleteExerciseButton(
               enabled: _canComplete,
-              onPressed: _completeExercise,
+              onPressed: () => _completeExercise(),
             ),
           ),
         ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scifit/features/progress/data/mock_progress_data.dart';
+import 'package:mobile_scifit/features/sessions/data/session_repository.dart';
+import 'package:mobile_scifit/features/sessions/data/session_store.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
@@ -11,12 +13,28 @@ class WorkoutHistoryScreen extends StatefulWidget {
 }
 
 class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
+  final SessionRepository _sessionRepository = SessionRepository();
   String _selectedPlan = 'All Plans';
   int _rangeDays = 90;
+  bool _isLoading = true;
 
-  List<WorkoutSessionLog> get _filteredSessions {
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    await _sessionRepository.fetchHistory();
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  List<WorkoutSessionLog> _filteredSessions(List<WorkoutSessionLog> sessions) {
     final cutoff = DateTime.now().subtract(Duration(days: _rangeDays));
-    return mockWorkoutSessions.where((session) {
+    return sessions.where((session) {
       final matchesPlan =
           _selectedPlan == 'All Plans' || session.planName == _selectedPlan;
       final matchesDate = session.date.isAfter(cutoff);
@@ -24,9 +42,11 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     }).toList()..sort((a, b) => b.date.compareTo(a.date));
   }
 
-  Map<String, List<WorkoutSessionLog>> get _groupedByWeek {
+  Map<String, List<WorkoutSessionLog>> _groupedByWeek(
+    List<WorkoutSessionLog> sessions,
+  ) {
     final Map<String, List<WorkoutSessionLog>> grouped = {};
-    for (final session in _filteredSessions) {
+    for (final session in _filteredSessions(sessions)) {
       final weekStart = session.date.subtract(
         Duration(days: session.date.weekday - 1),
       );
@@ -40,80 +60,103 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final planNames = {
-      'All Plans',
-      ...mockWorkoutSessions.map((session) => session.planName),
-    }.toList();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Workout History')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _selectedPlan,
-                  decoration: const InputDecoration(labelText: 'Plan'),
-                  items: planNames
-                      .map(
-                        (plan) =>
-                            DropdownMenuItem(value: plan, child: Text(plan)),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      _selectedPlan = value;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  initialValue: _rangeDays,
-                  decoration: const InputDecoration(labelText: 'Date Range'),
-                  items: const [
-                    DropdownMenuItem(value: 7, child: Text('Last 7d')),
-                    DropdownMenuItem(value: 30, child: Text('Last 30d')),
-                    DropdownMenuItem(value: 90, child: Text('Last 90d')),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      _rangeDays = value;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ..._groupedByWeek.entries.map((entry) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: ValueListenableBuilder<List<WorkoutSessionLog>>(
+        valueListenable: sessionHistoryStore,
+        builder: (context, sessions, _) {
+          final planNames = {
+            'All Plans',
+            ...sessions.map((session) => session.planName),
+          }.toList();
+          final groupedSessions = _groupedByWeek(sessions);
+
+          if (_isLoading && sessions.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return RefreshIndicator(
+            onRefresh: _loadHistory,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
               children: [
-                Text(
-                  entry.key,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _selectedPlan,
+                        decoration: const InputDecoration(labelText: 'Plan'),
+                        items: planNames
+                            .map(
+                              (plan) => DropdownMenuItem(
+                                value: plan,
+                                child: Text(plan),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _selectedPlan = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        initialValue: _rangeDays,
+                        decoration: const InputDecoration(
+                          labelText: 'Date Range',
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 7, child: Text('Last 7d')),
+                          DropdownMenuItem(value: 30, child: Text('Last 30d')),
+                          DropdownMenuItem(value: 90, child: Text('Last 90d')),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _rangeDays = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                ...entry.value.map((session) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _SessionHistoryCard(session: session),
-                  );
-                }),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                if (groupedSessions.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 48),
+                    child: Center(child: Text('No workout history yet')),
+                  )
+                else
+                  ...groupedSessions.entries.map((entry) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entry.key,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...entry.value.map((session) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _SessionHistoryCard(session: session),
+                          );
+                        }),
+                        const SizedBox(height: 12),
+                      ],
+                    );
+                  }),
               ],
-            );
-          }),
-        ],
+            ),
+          );
+        },
       ),
     );
   }

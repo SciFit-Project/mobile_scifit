@@ -180,6 +180,8 @@ class AppRouter {
             builder: (c, s) => ExerciseLogScreen(
               exerciseId: s.pathParameters['exerciseId']!,
               sessionId: s.uri.queryParameters['sessionId']!,
+              exerciseName:
+                  s.uri.queryParameters['exerciseName'] ?? 'Exercise',
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scifit/features/progress/data/mock_progress_data.dart';
+import 'package:mobile_scifit/features/sessions/data/session_repository.dart';
 
 class SessionDetailScreen extends StatefulWidget {
   final String sessionId;
@@ -12,16 +13,43 @@ class SessionDetailScreen extends StatefulWidget {
 }
 
 class _SessionDetailScreenState extends State<SessionDetailScreen> {
+  final SessionRepository _sessionRepository = SessionRepository();
   bool _comparePrevious = false;
+  WorkoutSessionLog? _session;
+  WorkoutSessionLog? _previousSession;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    final session = await _sessionRepository.fetchSessionById(widget.sessionId);
+    final previousSession = await _sessionRepository.fetchPreviousSession(
+      widget.sessionId,
+    );
+    if (!mounted) return;
+    setState(() {
+      _session = session;
+      _previousSession = previousSession;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final session = getSessionById(widget.sessionId);
+    final session = _session;
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     if (session == null) {
       return const Scaffold(body: Center(child: Text('Session not found')));
     }
 
-    final previousSession = getPreviousSession(widget.sessionId);
+    final previousSession = _previousSession;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Session Detail')),
@@ -52,12 +80,15 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
           ),
           const SizedBox(height: 12),
           ...session.exercises.map((exercise) {
-            final previousExercise = previousSession == null
-                ? null
-                : getExerciseLogForSession(
-                    previousSession,
-                    exercise.exerciseId,
-                  );
+            SessionExerciseLog? previousExercise;
+            if (previousSession != null) {
+              for (final item in previousSession.exercises) {
+                if (item.exerciseId == exercise.exerciseId) {
+                  previousExercise = item;
+                  break;
+                }
+              }
+            }
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: ExpansionTile(
