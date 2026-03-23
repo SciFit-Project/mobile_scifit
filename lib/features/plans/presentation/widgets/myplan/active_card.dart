@@ -140,7 +140,7 @@ class ActiveCard extends StatelessWidget {
                       height: 40,
                       child: ElevatedButton(
                         onPressed: () async {
-                          await plansRepository.activatePlan(null);
+                          await plansRepository.deactivatePlan(plans.id);
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

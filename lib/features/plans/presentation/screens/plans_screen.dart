@@ -17,6 +17,23 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
   final PlansRepository _plansRepository = PlansRepository();
 
   @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  Future<void> _loadPlans() async {
+    try {
+      await _plansRepository.fetchPlans();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load plans right now')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
@@ -26,35 +43,39 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
             final activePlan = plans.where((p) => p.isActive).firstOrNull;
             final otherPlans = plans.where((p) => !p.isActive).toList();
 
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _planHeader(),
+            return RefreshIndicator(
+              onRefresh: _loadPlans,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _planHeader(),
 
-                    const SizedBox(height: 16),
-                    if (activePlan != null)
-                      ActiveCard(plans: activePlan)
-                    else
-                      const Text('No active plan'),
+                      const SizedBox(height: 16),
+                      if (activePlan != null)
+                        ActiveCard(plans: activePlan)
+                      else
+                        const Text('No active plan'),
 
-                    const SizedBox(height: 16),
-                    const Text('My Other Plans'),
+                      const SizedBox(height: 16),
+                      const Text('My Other Plans'),
 
-                    const SizedBox(height: 16),
-                    ...otherPlans.map(
-                      (plan) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _otherPlan(
-                          plan.id,
-                          plan.name,
-                          '${plan.stats.totalDays} days · ${plan.stats.estDurationMin} min/session',
+                      const SizedBox(height: 16),
+                      ...otherPlans.map(
+                        (plan) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _otherPlan(
+                            plan.id,
+                            plan.name,
+                            '${plan.stats.totalDays} days · ${plan.stats.estDurationMin} min/session',
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

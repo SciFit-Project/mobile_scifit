@@ -20,9 +20,17 @@ class AddExercisesScreen extends StatefulWidget {
 class _AddExercisesScreenState extends State<AddExercisesScreen> {
   final PlansRepository _plansRepository = PlansRepository();
   final TextEditingController _searchCtrl = TextEditingController();
+  List<Exercise> _exercises = [];
+  bool _isLoading = true;
 
   String _search = '';
   MuscleGroup? _selectedGroup;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExercises();
+  }
 
   @override
   void dispose() {
@@ -30,8 +38,28 @@ class _AddExercisesScreenState extends State<AddExercisesScreen> {
     super.dispose();
   }
 
+  Future<void> _loadExercises() async {
+    try {
+      final exercises = await _plansRepository.fetchExercises();
+      if (!mounted) return;
+      setState(() {
+        _exercises = exercises;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _exercises = _plansRepository.getExercises();
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load exercises right now')),
+      );
+    }
+  }
+
   List<Exercise> get _filteredExercises {
-    return _plansRepository.getExercises().where((exercise) {
+    return _exercises.where((exercise) {
       final matchName = exercise.name.toLowerCase().contains(
         _search.toLowerCase(),
       );
@@ -240,7 +268,9 @@ class _AddExercisesScreenState extends State<AddExercisesScreen> {
             const SizedBox(height: 16),
 
             Expanded(
-              child: grouped.isEmpty
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : grouped.isEmpty
                   ? const Center(
                       child: Text(
                         'No exercises found',
