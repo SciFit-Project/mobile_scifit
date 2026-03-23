@@ -8,6 +8,7 @@ import 'package:mobile_scifit/features/home/presentation/widgets/stat_info.dart'
 import 'package:mobile_scifit/features/home/presentation/widgets/steps/step_card.dart';
 import 'package:mobile_scifit/features/home/presentation/widgets/workout_card.dart';
 import 'package:mobile_scifit/features/plans/data/plan_store.dart';
+import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final HomeService _healthService = HomeService();
+  final PlansRepository _plansRepository = PlansRepository();
 
   int _mobileSteps = 0;
   int _wearableSteps = 0;
@@ -41,6 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final dataStep = await _healthService.getTodaySteps();
     final sleepData = await _healthService.getWeeklySleep();
     final heartRate = await _healthService.getAverageHeartRate();
+    try {
+      await _plansRepository.fetchPlans();
+    } catch (_) {}
 
     setState(() {
       _mobileSteps = dataStep['mobile'] ?? 0;
