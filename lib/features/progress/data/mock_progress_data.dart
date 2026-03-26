@@ -57,6 +57,7 @@ class WorkoutSessionLog {
   final double avgRpe;
   final int calories;
   final List<SessionExerciseLog> exercises;
+  final double? totalVolumeOverride;
 
   const WorkoutSessionLog({
     required this.id,
@@ -67,9 +68,11 @@ class WorkoutSessionLog {
     required this.avgRpe,
     required this.calories,
     required this.exercises,
+    this.totalVolumeOverride,
   });
 
   double get totalVolume =>
+      totalVolumeOverride ??
       exercises.fold(0.0, (sum, exercise) => sum + exercise.volume);
 }
 

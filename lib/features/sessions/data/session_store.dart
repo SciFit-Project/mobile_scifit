@@ -50,6 +50,7 @@ List<WorkoutSessionLog> _cloneSessions(List<WorkoutSessionLog> sessions) {
           durationMin: session.durationMin,
           avgRpe: session.avgRpe,
           calories: session.calories,
+          totalVolumeOverride: session.totalVolumeOverride,
           exercises: session.exercises
               .map(
                 (exercise) => SessionExerciseLog(

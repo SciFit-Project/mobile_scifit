@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/progress/data/mock_progress_data.dart';
+import 'package:mobile_scifit/features/sessions/data/session_store.dart';
 
 class ExerciseStatsScreen extends StatelessWidget {
   final String exerciseId;
@@ -12,7 +13,17 @@ class ExerciseStatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sessions = getSessionsForExercise(exerciseId);
+    final sourceSessions = currentSessionHistory.isEmpty
+        ? mockWorkoutSessions
+        : currentSessionHistory;
+    final sessions = sourceSessions
+        .where(
+          (session) => session.exercises.any(
+            (exercise) => exercise.exerciseId == exerciseId,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
     if (sessions.isEmpty) {
       return const Scaffold(
         body: Center(child: Text('No stats found for this exercise')),
@@ -20,7 +31,7 @@ class ExerciseStatsScreen extends StatelessWidget {
     }
 
     final logs = sessions
-        .map((session) => getExerciseLogForSession(session, exerciseId)!)
+        .map((session) => _getExerciseLogForSession(session, exerciseId)!)
         .toList();
     final exerciseName = logs.first.exerciseName;
 
@@ -35,26 +46,32 @@ class ExerciseStatsScreen extends StatelessWidget {
         children: [
           _SectionCard(
             title: 'PR Summary',
-            child: Row(
-              children: [
-                Expanded(
-                  child: _SummaryBox(
-                    label: 'Max Weight',
-                    value: '${maxWeight.round()} kg',
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _SummaryBox(
+                      label: 'Max Weight',
+                      value: '${maxWeight.round()} kg',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SummaryBox(label: 'Max Reps', value: '$maxReps reps'),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SummaryBox(
-                    label: 'Est. 1RM',
-                    value: '${bestOneRm.round()} kg',
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryBox(
+                      label: 'Max Reps',
+                      value: '$maxReps reps',
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryBox(
+                      label: 'Est. 1RM',
+                      value: '${bestOneRm.round()} kg',
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -94,7 +111,7 @@ class ExerciseStatsScreen extends StatelessWidget {
             title: 'Last 5 Sessions',
             child: Column(
               children: sessions.reversed.take(5).map((session) {
-                final log = getExerciseLogForSession(session, exerciseId)!;
+                final log = _getExerciseLogForSession(session, exerciseId)!;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(DateFormat('dd MMM yyyy').format(session.date)),
@@ -112,6 +129,16 @@ class ExerciseStatsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  SessionExerciseLog? _getExerciseLogForSession(
+    WorkoutSessionLog session,
+    String targetExerciseId,
+  ) {
+    for (final exercise in session.exercises) {
+      if (exercise.exerciseId == targetExerciseId) return exercise;
+    }
+    return null;
   }
 }
 
@@ -174,11 +201,15 @@ class _SummaryBox extends StatelessWidget {
               color: Color(0xFF64748B),
               fontWeight: FontWeight.w700,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
+          const Spacer(),
           Text(
             value,
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

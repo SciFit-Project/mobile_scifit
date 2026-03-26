@@ -244,6 +244,8 @@ class SessionRepository {
       durationMin: (raw['durationMin'] ?? raw['duration_min'] ?? 0) as int,
       avgRpe: ((raw['avgRpe'] ?? raw['avg_rpe'] ?? 0) as num).toDouble(),
       calories: (raw['calories'] ?? 0) as int,
+      totalVolumeOverride:
+          ((raw['totalVolume'] ?? raw['total_volume']) as num?)?.toDouble(),
       exercises: const [],
     );
   }
@@ -353,6 +355,8 @@ class SessionRepository {
       durationMin: (durationMin as num).round(),
       avgRpe: (avgRpe as num).toDouble(),
       calories: (calories as num).round(),
+      totalVolumeOverride:
+          ((raw['totalVolume'] ?? raw['total_volume']) as num?)?.toDouble(),
       exercises: exercises,
     );
   }
