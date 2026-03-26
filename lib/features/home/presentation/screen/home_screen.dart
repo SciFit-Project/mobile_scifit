@@ -11,6 +11,8 @@ import 'package:mobile_scifit/features/plans/data/plan_store.dart';
 import 'package:mobile_scifit/features/plans/data/plans_repository.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 import 'package:mobile_scifit/features/profile/data/mock_profile.dart';
+import 'package:mobile_scifit/features/sessions/data/session_repository.dart';
+import 'package:mobile_scifit/features/sessions/data/session_store.dart';
 import 'package:mobile_scifit/features/shared/widgets/top_navbar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final HomeService _healthService = HomeService();
   final PlansRepository _plansRepository = PlansRepository();
+  final SessionRepository _sessionRepository = SessionRepository();
 
   int _mobileSteps = 0;
   int _wearableSteps = 0;
@@ -45,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final heartRate = await _healthService.getAverageHeartRate();
     try {
       await _plansRepository.fetchPlans();
+    } catch (_) {}
+    try {
+      await _sessionRepository.fetchHistory();
     } catch (_) {}
 
     setState(() {
@@ -118,23 +124,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 ValueListenableBuilder<List<MyPlans>>(
                   valueListenable: planStore,
                   builder: (context, plans, _) {
-                    final activePlan = plans.where((p) => p.isActive).firstOrNull;
-                    final activeDay = activePlan?.days.isNotEmpty == true
-                        ? activePlan!.days.first
-                        : null;
+                    return ValueListenableBuilder<Map<String, int>>(
+                      valueListenable: planDayIndexStore,
+                      builder: (context, _, __) {
+                        return ValueListenableBuilder(
+                          valueListenable: sessionHistoryStore,
+                          builder: (context, sessions, ___) {
+                            final activePlan = plans.where((p) => p.isActive).firstOrNull;
+                            final activeDay = getCurrentWorkoutDay(activePlan);
+                            final completedToday =
+                                activePlan == null || activeDay == null
+                                ? null
+                                : findCompletedSessionToday(
+                                    planName: activePlan.name,
+                                    dayName: activeDay.name,
+                                  );
 
-                    return WorkoutCard(
-                      workoutTitle: activePlan == null || activeDay == null
-                          ? 'No active workout plan'
-                          : '${activePlan.name} - ${activeDay.name}',
-                      totalExercise: activeDay?.exercises.length ?? 0,
-                      timeDuration: activePlan?.stats.estDurationMin ?? 0,
-                      onStartWorkout: () {
-                        if (activeDay == null) {
-                          context.push('/plans');
-                          return;
-                        }
-                        context.push('/workout-plan/${activeDay.id}');
+                            return WorkoutCard(
+                              workoutTitle: activePlan == null || activeDay == null
+                                  ? 'No active workout plan'
+                                  : '${activePlan.name} - ${activeDay.name}',
+                              totalExercise: activeDay?.exercises.length ?? 0,
+                              timeDuration: activePlan?.stats.estDurationMin ?? 0,
+                              isCompleted: completedToday != null,
+                              onNextDay: activePlan == null
+                                  ? null
+                                  : () {
+                                      advancePlanDay(
+                                        activePlan.id,
+                                        activePlan.days.length,
+                                      );
+                                    },
+                              onReset: activePlan == null
+                                  ? null
+                                  : () {
+                                      resetPlanDay(activePlan.id);
+                                    },
+                              onStartWorkout: () {
+                                if (activeDay == null) {
+                                  context.push('/plans');
+                                  return;
+                                }
+                                context.push('/workout-plan/${activeDay.id}');
+                              },
+                            );
+                          },
+                        );
                       },
                     );
                   },

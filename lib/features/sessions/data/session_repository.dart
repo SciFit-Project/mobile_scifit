@@ -249,41 +249,110 @@ class SessionRepository {
   }
 
   WorkoutSessionLog _mapSessionDetail(dynamic raw) {
-    final exercises = ((raw['exercises'] as List?) ?? const [])
-        .map<SessionExerciseLog>((item) {
-          final sets = ((item['sets'] as List?) ?? const [])
-              .map<LoggedSet>((set) {
-                return LoggedSet(
-                  reps: (set['reps'] ?? 0) as int,
-                  weight: ((set['weight'] ?? set['weightKg'] ?? set['weight_kg'] ?? 0)
-                          as num)
-                      .toDouble(),
-                  rpe: ((set['rpe'] ?? 0) as num).toDouble(),
-                );
-              })
-              .toList();
+    final rawExercises = raw['exercises'] as List?;
+    final rawSets = raw['sets'] as List?;
+    final exerciseMap = <String, SessionExerciseLog>{};
 
-          return SessionExerciseLog(
-            exerciseId: (item['exerciseId'] ?? item['exercise_id'] ?? '') as String,
-            exerciseName:
-                (item['name'] ?? item['exerciseName'] ?? item['exercise_name'] ?? 'Exercise')
-                    as String,
-            newPr: (item['newPr'] ?? item['new_pr'] ?? false) as bool,
-            sets: sets,
-          );
-        })
-        .toList();
+    if (rawExercises != null) {
+      for (final item in rawExercises) {
+        final sets = ((item['sets'] as List?) ?? const [])
+            .map<LoggedSet>((set) {
+              return LoggedSet(
+                reps: (set['reps'] ?? 0) as int,
+                weight: ((set['weight'] ?? set['weightKg'] ?? set['weight_kg'] ?? 0)
+                        as num)
+                    .toDouble(),
+                rpe: ((set['rpe'] ?? 0) as num).toDouble(),
+              );
+            })
+            .toList();
+
+        final exercise = SessionExerciseLog(
+          exerciseId: (item['exerciseId'] ?? item['exercise_id'] ?? '') as String,
+          exerciseName:
+              (item['name'] ?? item['exerciseName'] ?? item['exercise_name'] ?? 'Exercise')
+                  as String,
+          newPr: (item['newPr'] ?? item['new_pr'] ?? false) as bool,
+          sets: sets,
+        );
+        exerciseMap[exercise.exerciseId] = exercise;
+      }
+    } else if (rawSets != null) {
+      for (final item in rawSets) {
+        final exerciseId = (item['exercise_id'] ?? '') as String;
+        final existing = exerciseMap[exerciseId];
+        final loggedSet = LoggedSet(
+          reps: (item['reps'] ?? 0) as int,
+          weight: ((item['weight'] ?? item['weightKg'] ?? item['weight_kg'] ?? 0)
+                  as num)
+              .toDouble(),
+          rpe: ((item['rpe'] ?? 0) as num).toDouble(),
+        );
+
+        if (existing != null) {
+          existing.sets.add(loggedSet);
+          continue;
+        }
+
+        exerciseMap[exerciseId] = SessionExerciseLog(
+          exerciseId: exerciseId,
+          exerciseName:
+              (item['exercise']?['name'] ??
+                      item['name'] ??
+                      item['exercise_name'] ??
+                      'Exercise')
+                  as String,
+          newPr: false,
+          sets: [loggedSet],
+        );
+      }
+    }
+
+    final exercises = exerciseMap.values.toList();
+
+    final date =
+        DateTime.tryParse((raw['date'] ?? raw['startedAt'] ?? raw['started_at'] ?? '').toString()) ??
+        DateTime.now();
+    final finishedAt = DateTime.tryParse(
+      (raw['finishedAt'] ?? raw['finished_at'] ?? '').toString(),
+    );
+    final durationMin =
+        raw['durationMin'] ??
+        raw['duration_min'] ??
+        (finishedAt == null ? 0 : finishedAt.difference(date).inMinutes);
+    final avgRpe =
+        raw['avgRpe'] ??
+        raw['avg_rpe'] ??
+        (exercises.isEmpty
+            ? ((raw['perceivedExertion'] ?? raw['perceived_exertion'] ?? 0)
+                  as num)
+            : exercises
+                    .map((exercise) => exercise.avgRpe)
+                    .reduce((a, b) => a + b) /
+                exercises.length);
+    final calories =
+        raw['calories'] ??
+        (durationMin is int ? durationMin : (durationMin as num).round()) * 5;
 
     return WorkoutSessionLog(
       id: (raw['id'] ?? '') as String,
-      planName: (raw['planName'] ?? raw['plan_name'] ?? 'Workout Plan') as String,
-      dayName: (raw['dayName'] ?? raw['day_name'] ?? 'Workout Day') as String,
-      date:
-          DateTime.tryParse((raw['date'] ?? raw['startedAt'] ?? raw['started_at'] ?? '').toString()) ??
-          DateTime.now(),
-      durationMin: (raw['durationMin'] ?? raw['duration_min'] ?? 0) as int,
-      avgRpe: ((raw['avgRpe'] ?? raw['avg_rpe'] ?? 0) as num).toDouble(),
-      calories: (raw['calories'] ?? 0) as int,
+      planName:
+          (raw['planName'] ??
+                  raw['plan_name'] ??
+                  raw['workoutDay']?['plan']?['name'] ??
+                  'Workout Plan')
+              as String,
+      dayName:
+          (raw['dayName'] ??
+                  raw['day_name'] ??
+                  raw['workoutDay']?['name'] ??
+                  raw['description'] ??
+                  'Workout Day')
+              as String,
+      date: date,
+      durationMin: (durationMin as num).round(),
+      avgRpe: (avgRpe as num).toDouble(),
+      calories: (calories as num).round(),
       exercises: exercises,
     );
   }

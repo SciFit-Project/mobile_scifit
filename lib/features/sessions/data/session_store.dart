@@ -6,6 +6,24 @@ final ValueNotifier<List<WorkoutSessionLog>> sessionHistoryStore =
 
 List<WorkoutSessionLog> get currentSessionHistory => sessionHistoryStore.value;
 
+bool isSameCalendarDay(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
+WorkoutSessionLog? findCompletedSessionToday({
+  required String planName,
+  required String dayName,
+}) {
+  final now = DateTime.now();
+  for (final session in currentSessionHistory) {
+    if (session.planName != planName || session.dayName != dayName) continue;
+    if (isSameCalendarDay(session.date, now)) {
+      return session;
+    }
+  }
+  return null;
+}
+
 WorkoutSessionLog? findSessionById(String sessionId) {
   for (final session in currentSessionHistory) {
     if (session.id == sessionId) return session;

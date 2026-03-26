@@ -6,6 +6,7 @@ import 'package:mobile_scifit/core/theme/app_theme.dart';
 import 'package:mobile_scifit/features/plans/data/plan_store.dart';
 import 'package:mobile_scifit/features/plans/types/plans_type.dart';
 import 'package:mobile_scifit/features/sessions/data/session_repository.dart';
+import 'package:mobile_scifit/features/sessions/data/session_store.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/exercise_row.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/finish_workout_button.dart';
 import 'package:mobile_scifit/features/workout/presentation/widgets/workout_widgets/workout_progress.dart';
@@ -24,15 +25,18 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
   late final List<WorkoutExercise> _exercises;
   late final String _workoutTitle;
   late final String _planName;
+  String? _planId;
 
   String? _sessionId;
   bool _isStartingSession = true;
+  bool _completedToday = false;
 
   @override
   void initState() {
     super.initState();
     final day = findWorkoutDayById(widget.dayId);
     final plan = _findPlanForDay(widget.dayId);
+    _planId = plan?.id;
     _workoutTitle = day?.name ?? 'Workout';
     _planName = plan?.name ?? 'Workout Plan';
     _exercises =
@@ -48,6 +52,18 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
             )
             .toList() ??
         [];
+    final completedSession = findCompletedSessionToday(
+      planName: _planName,
+      dayName: _workoutTitle,
+    );
+    if (completedSession != null) {
+      for (final exercise in _exercises) {
+        exercise.done = true;
+      }
+      _completedToday = true;
+      _isStartingSession = false;
+      return;
+    }
     _startSession();
   }
 
@@ -121,7 +137,7 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
                           reps: exercise.reps,
                           isDone: isDone,
                           muscleGroup: exercise.muscleGroup,
-                          onTap: isDone || _sessionId == null
+                          onTap: isDone || _sessionId == null || _completedToday
                               ? null
                               : () async {
                                   final didComplete = await context.push<bool>(
@@ -142,13 +158,22 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
               onPressed: () async {
                 if (_sessionId == null) return;
                 await _sessionRepository.finishSession(sessionId: _sessionId!);
+                final planId = _planId;
+                if (planId != null) {
+                  final plan = findPlanById(planId);
+                  if (plan != null) {
+                    advancePlanDay(planId, plan.days.length);
+                  }
+                }
                 if (!context.mounted) return;
                 context.pop();
               },
             ),
             const Gap(8),
             Text(
-              "Complete all exercise to finish",
+              _completedToday
+                  ? "Workout completed today"
+                  : "Complete all exercise to finish",
               style: TextStyle(color: Colors.black.withAlpha(90)),
             ),
             const Gap(16),
