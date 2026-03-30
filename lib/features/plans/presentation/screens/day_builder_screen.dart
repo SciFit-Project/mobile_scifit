@@ -22,12 +22,16 @@ class _DayBuilderScreenState extends State<DayBuilderScreen> {
   late List<PlanExercise> _draftExercises;
   late String _savedDayName;
   late List<PlanExercise> _savedExercises;
+  late int _sourceDayNumber;
   final List<_PendingRemovalExercise> _pendingRemovalExercises = [];
   final Set<PlanExercise> _newExercises = {};
 
   @override
   void initState() {
     super.initState();
+    _sourceDayNumber = _plan.days
+        .firstWhere((d) => d.id == widget.dayId)
+        .dayNumber;
     _loadDraftFromSource();
   }
 
@@ -40,8 +44,19 @@ class _DayBuilderScreenState extends State<DayBuilderScreen> {
 
   MyPlans get _plan => findPlanById(widget.id)!;
 
-  WorkoutDay get _sourceDay =>
-      _plan.days.firstWhere((d) => d.id == widget.dayId);
+  WorkoutDay get _sourceDay {
+    final byId = _plan.days.where((d) => d.id == widget.dayId);
+    if (byId.isNotEmpty) {
+      return byId.first;
+    }
+
+    final byDayNumber = _plan.days.where((d) => d.dayNumber == _sourceDayNumber);
+    if (byDayNumber.isNotEmpty) {
+      return byDayNumber.first;
+    }
+
+    throw StateError('Unable to find source day for plan ${widget.id}');
+  }
 
   bool get _hasPendingChanges {
     return _nameController.text.trim() != _savedDayName ||
